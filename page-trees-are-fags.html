@@ -1,0 +1,618 @@
+<?php
+<?php echo get_stylesheet_directory_uri().'/'; ?>
+/*
+Template Name: Trees Are Fags
+*/
+?>
+<html>
+<head>
+	<!--<link rel="stylesheet" type="<?php echo get_stylesheet_directory_uri().'/'; ?>text/css" href="<?php echo get_stylesheet_uri(); ?>">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <link href="https://fonts.googleapis.<?php echo get_stylesheet_directory_uri().'/'; ?>com/css?family=EB+Garamond" rel="stylesheet">
+    <style>
+
+        .swipe {
+            overflow: hidden;
+            visibility: hidden;
+            position: relative;
+        }
+
+        .swipe-wrap {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .swipe-wrap > div {
+            position: relative;
+            float: left;
+            width: 100%;
+            min-height: 100%;
+            display: flex;
+            justify-content: center;
+            /*align-items: center;*/
+        }
+
+        .page {
+            top: 50px;
+            /*width: 100%;*/
+            /*display: flex;*/
+            /*flex-direction: column;*/
+            /*justify-content: center;*/
+        }
+
+        html,body {
+            overflow-x: hidden;
+            height: 100%;
+            margin: 0px;
+            padding: 0px;
+            background: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/background-large.jpeg);
+            background-size: cover;
+            background-position: 50% 0%;
+        }
+
+        body {
+            position: relative;
+            font-family: 'EB Garamond', serif;
+            color: white;
+            font-size: large;
+            line-height: 1.4;
+        }
+
+        .title {
+            position: relative;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 220px;
+            width: auto;
+        }
+
+        /* player controls */
+        .controls {
+            position: relative;
+            float: top;
+            width: 600px;
+            height: 250px;
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            justify-content: space-around;
+        }
+
+        .controlButton {
+            cursor: pointer;
+            height: 100px;
+            width: 100px;
+            background: transparent;
+            background-size: 100% auto; /* image resized to div size */
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .controlButton:active {
+            opacity: 0.5;
+        }
+
+        #ffw {
+            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-fw.png);
+            background-position: 100%;
+        }
+
+        #rew {
+            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-back.png);
+            background-position: 0%;
+        }
+
+        #playpause {
+            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/play-pause-wait.png);
+            width: 180px;
+            background-size: 100% auto;
+        }
+
+        .play {
+            cursor: pointer;
+            background-position: 50% 0px;
+        }
+
+        .pause {
+            background-position: 50% -100px;
+        }
+
+        .loading {
+            background-position: 50% -200px;
+            cursor: default;
+            animation: throb 2.3s infinite;
+        }
+
+        #console {
+            overflow: auto;
+            position: absolute;
+            left: 2px;
+            top: 2px;
+            background-color: #fffacd;
+            width: 200px;
+            height: 200px;
+            padding: 2px;
+            font-size: smaller;
+        }
+
+        /* text pages */
+        .text-body {
+            text-align: justify;
+            float: bottom;
+            max-width: 430;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        a {
+            color: #aeaeae;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: white;
+        }
+
+        a:active {
+            color: white;
+        }
+
+        @keyframes throb {
+            0% {opacity:  1.0;}
+            /*5%{opacity:  1.0;}*/
+            50%{opacity:  0.0;}
+            /*95%{opacity:  1.0;}*/
+            100%{opacity: 1.0;}
+        }
+
+    </style>
+	<script type="text/javascript"
+	src="<?php echo get_stylesheet_directory_uri().'/'; ?>js/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript"
+	src="<?php echo get_stylesheet_directory_uri().'/'; ?>js/swipe.min.js"></script>
+	<script type="text/javascript">
+
+		//
+		var playButton;
+		var loadBar;
+		var swipe;
+
+		var cues;
+		var player;
+
+		$(document).ready(init);
+
+		function init() {
+		    // setup jQuery refs
+			playButton = $('#playpause');
+			loadBar = $('.loadBar');
+
+            // setup player
+            var cuePoolTotal = 15; // total number of phrases in the pool
+            cues = new Cues(cuePoolTotal);
+            // DEFINE CUE POSITIONS HERE
+            var playlist = [261.26, 356.18, 430.94, 529.53, 647.82, 746.13, 888.74, 1022.92];
+            var startTime = 200;
+            var skipTime = 5; // seconds to skip forward/back using buttons
+            player = new Player(startTime, playlist, skipTime);
+
+            // setup swipe
+			swipe = new Swipe($('#slider')[0], {
+				speed: 700, // of transition (ms)
+				continuous: false, // ie. don't cycle back round
+				disableScroll: true,
+                draggable: true, // swipe on desktop
+                callback: function(index, elem, dir) {
+				    // ensure that preload starts on first swipe (for iOS)
+				    if (index === 0 && dir === -1) {
+				        player.preload();
+                    }
+                }
+			});
+			swipe.setup();
+
+            // setup left and right keys (for closure)
+            var Key = {
+                LEFT: 37,
+                RIGHT: 39
+            };
+            // arrow keys to move between swipe pages
+			window.addEventListener('keydown', function(e) {
+				if (!e) e = window.event;
+				// setup keys
+				var keycode = e.keyCode || e.which;
+				// test keys
+				if (keycode == Key.LEFT) {
+					swipe.prev();
+				} else if (keycode == Key.RIGHT) {
+				    if (swipe.getPos() === 0) player.preload();
+					swipe.next();
+				}
+			});
+		}
+
+		// object manages pool of shuffled cues (as filenames only)
+		function Cues(total) {
+			console.log("Cues created");
+
+			this.fileList = [];
+			this.total = total;
+			this.used = 0; // how many cues have been given away
+
+			// initialise filenames array
+			for (var i = 0; i < this.total; ++i) {
+				this.fileList[i] = getFileName(i+1);
+			}
+			// shuffle
+			this.fileList = shuffleArray(this.fileList);
+
+			// get next filename from array
+			this.getNextCue = function() {
+				if (this.used < this.total) {
+				    var filepath = this.fileList[this.used++];
+					return this.fileList[this.used++];
+				}
+			};
+		}
+
+		function Cue(start) {
+			this.start = start; // start time in main narration timeline
+			this.active = false;
+			this.hasLoaded = false;
+
+			var file = cues.getNextCue();
+			console.log("Creating Cue on file = " + file);
+			this.audio = new Audio(file);
+			this.audio.preload = 'auto';
+
+            var me = this; // binding
+            this.audio.addEventListener('ended', function() { me.ended(); });
+			this.audio.addEventListener('canplaythrough', function() { me.loaded(); });
+		}
+
+		Cue.prototype =
+        {
+            loaded: function() {
+                console.log('Cue loaded');
+                this.hasLoaded = true;
+                if (player.waitLoad) {
+                    player.audioUnwaiting();
+                }
+            },
+
+            preload: function() {
+                this.audio.play();
+                this.audio.pause();
+                // calculate end time in main timeline
+                this.end = this.start + this.audio.duration;
+                console.log("Cue start: " + this.start + " Cue end: " + this.end);
+            },
+
+			play: function() {
+			    if (!this.hasLoaded) {
+			        player.audioWaiting();
+                } else if (this.audio) {
+					this.audio.play();
+				}
+			},
+
+			pause: function() {
+				this.audio.pause();
+			},
+
+			go: function() {
+				this.active = true;
+				this.play();
+				var myCueNumber = player.curCue();
+				console.log('Cue ' + myCueNumber + ' triggered');
+			},
+
+            // played through (onEnded)
+			ended: function() {
+                console.log('Cue ended');
+                this.audio.pause();
+				this.active = false;
+				player.nextCue();
+			},
+
+			deactivate: function() {
+                console.log('Cue deactivated');
+				if (this.active) {
+					this.active = false;
+                    this.audio.pause();
+					this.audio.currentTime = 0;
+				}
+			}
+
+		};
+
+		// main Player object
+		function Player(startTime, playlist, skipTime) {
+
+			this.skipTime = skipTime;
+			this.playing = false;
+            this.preloaded = false;
+			this.waitForCue = false;
+			this.waitLoad = false;
+            this.startTime = startTime;
+
+			// initialise main narration audio
+			this.narration = new Audio(getFileName("main-narration"));
+			this.narration.preload = "auto";
+			var me = this; // retain binding
+            this.narration.addEventListener('canplaythrough', function() { me.loaded(); });
+			this.narration.addEventListener('timeupdate', function() { me.seek(); });
+			this.narration.addEventListener('ended', function() { me.ended(); });
+			this.narration.addEventListener('waiting', function() { me.audioWaiting(); });
+			this.narration.addEventListener('playing', function() { me.audioUnwaiting(); });
+
+			// initialise cues
+			this.cues = [];
+			this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
+			var listlen = playlist.length;
+			console.log("listlen = " + listlen);
+			for (var i = 0; i < listlen; i++) {
+			    var newCue = new Cue(playlist[i]);
+				this.cues.push(newCue);
+				console.table(this.cues[i]);
+			}
+			this.nextCue();
+		}
+
+		Player.prototype =
+        {
+			// get currently queued cue (or null)
+			curCue: function() {
+				if (this.currentCueNumber >= this.cues.length) {
+					return null;
+				}
+				return this.cues[this.currentCueNumber];
+			},
+
+			// get currently active cue (or null)
+			activeCue: function() {
+				var cue = this.curCue();
+				if (cue && cue.active) {
+					return cue;
+				} else {
+					return null;
+				}
+			},
+
+			play: function() {
+			    // TODO: not sure about this
+			    if (this.waitLoad) {
+                    this.audioWaiting();
+                    return;
+                }
+                this.playing = true;
+				if (!this.waitForCue) this.narration.play();
+				var cue = this.activeCue();
+				if (cue) cue.play();
+				playButton.addClass('pause');
+			},
+
+			pause: function() {
+				this.playing = false;
+				if (!this.waitForCue) this.narration.pause();
+				var cue = this.activeCue();
+				if (cue) cue.pause();
+				playButton.removeClass('pause');
+			},
+
+			// method called directly by pressing the play/pause button
+			playPause: function() {
+				// if the sequence has ended, restart the sequence
+				if (this.playing) {
+					this.pause();
+				} else {
+					this.play();
+				}
+			},
+
+            // skip forwards/backwards [amount] secs
+			skip: function(amount) {
+				var newNarrationTime = this.narration.currentTime + amount;
+				// skip in current active cue
+				var cue = this.curCue();
+				if (cue) {
+					if (cue.active) {
+					    // are we stepping out of the time bounds of currently playing cue?
+						if (newNarrationTime < cue.start) {
+							cue.deactivate();
+						} else if (newNarrationTime > cue.end) {
+							cue.ended();
+						} else {
+							cue.audio.currentTime = newNarrationTime - cue.start;
+						}
+					} else if (newNarrationTime > cue.start) {
+					    // should a cue be triggered now?
+						cue.go();
+						cue.audio.currentTime = newNarrationTime - cue.start;
+					}
+				}
+				// are we skipping back into a previous cue?
+				if (this.currentCueNumber > 0 && newNarrationTime < this.cues[this.currentCueNumber-1].end) {
+					this.currentCueNumber--;
+					cue = this.curCue();
+					cue.go();
+					cue.audio.currentTime = newNarrationTime - cue.start;
+				}
+				// skip in narration
+				if (newNarrationTime > this.narration.duration) {
+					this.ended();
+				} else {
+					this.narration.currentTime = Math.max(newNarrationTime, 0);
+				}
+				console.log("Skipped to: " + this.narration.currentTime);
+			},
+
+			rew: function() {
+				this.skip(-this.skipTime);
+			},
+
+			ffw: function() {
+				this.skip(this.skipTime);
+			},
+
+			seek: function() {
+				var cue = this.curCue();
+				if (cue && !cue.active && this.narration.currentTime >= cue.start) { // test we haven't run out of cues yet
+					cue.go();
+				}
+			},
+
+            nextCue: function() {
+			    this.currentCueNumber++;
+                var cue = this.curCue();
+                if (cue) {
+                    // cue.setup();
+                }
+            },
+
+            // finished playing through
+            ended: function() {
+                this.pause();
+                var cue = this.activeCue();
+                if (cue) cue.deactivate();
+                this.waitForCue = false;
+                this.currentCueNumber = 0;
+                this.narration.currentTime = 0;
+                swipe.slide(2, 600); // go to credits page
+            },
+
+            // play and pause each audio asset to trigger preloading on iOS
+            // (needs to be in an on-click event)
+            preload: function() {
+			    if (!this.preloaded) {
+                    this.narration.play();
+                    this.narration.pause();
+                    // this.narration.currentTime = this.startTime;
+                    var cueLen = this.cues.length;
+                    for (var i = 0; i < cueLen; i++) {
+                        this.cues[i].preload();
+                    }
+                }
+            },
+
+            // for onLoaded event
+            loaded: function() {
+			    console.log('loaded');
+                playButton.removeClass('loading');
+                $('.play').click(function() { player.playPause(); });
+                $('#rew').click(function() { player.rew(); })
+                $('#ffw').click(function() { player.ffw(); })
+            },
+
+            // if any element that needs to play now hasn't loaded (or onWaiting events)
+            audioWaiting: function() {
+                if (!this.waitLoad) {
+                    this.waitLoad = true;
+                    this.pause();
+                    playButton.addClass('loading');
+                }
+            },
+
+            // onPlaying - once an element that needs to play now has loaded
+            audioUnwaiting: function() {
+                if (this.waitLoad /* and... */) {
+                    this.waitLoad = false;
+                    playButton.removeClass('loading');
+                    this.play();
+                }
+            },
+		};
+
+		// for 'continue' button - swipe to next page and preload
+		function nextAndLoad() {
+			player.preload(); // trigger preloading on iOS
+			swipe.next();
+		}
+
+		function getFileName(affix) {
+			var dir = "<?php echo get_stylesheet_directory_uri().'/'; ?>audio/"; // directory/URI
+			var prefix = "cue-"; // prefix if cue (ie. if passed a number)
+			var postfix = ".mp3"; // format
+			if (typeof affix == 'number') { // if passed a number, it's a cue
+				if (affix < 10) affix = '0' + affix; // 0-padding
+				return dir + prefix + affix + postfix;
+			} else { // if passed text, that's the name of the main narration file
+				return dir + affix + postfix;
+			}
+		}
+
+		// based on Knuth Shuffle (https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array)
+		function shuffleArray(arr) {
+			var currentIndex = arr.length;
+			var randomIndex, temp;
+
+			// While there remain elements to shuffle...
+			while (currentIndex != 0) {
+				// Pick a remaining element...
+				randomIndex = Math.floor(Math.random() * currentIndex);
+				currentIndex--;
+				// Swap with current
+				temp = arr[randomIndex];
+				arr[randomIndex] = arr[currentIndex];
+				arr[currentIndex] = temp;
+			}
+			return arr;
+		}
+
+		function consoleLog(text) {
+			$('#console').append('<p>' + text + '</p>');
+			console.log(text);
+		}
+
+		// function loadLoop() {
+		// 	var buffered = intro.buffered;
+		// 	var dur = intro.duration;
+		// 	var loaded;
+		// 	if (buffered.length) {
+		// 		loaded = 100 * buffered.end(0) / dur;
+		// 		loadBar.html(loaded + '%');
+		// 	}
+		// 	if (buffered.length < dur) {
+		// 		setTimeout(loadLoop, 200);
+		// 	}
+		// }
+
+	</script>
+</head>
+<body>
+<!-- <div id="console"></div> -->
+<img src="<?php echo get_stylesheet_directory_uri().'/'; ?><?php echo get_stylesheet_directory_uri().'/'; ?>imgs/title-large.png" class="title" alt="Trees Are Fags" />
+<div id="slider" class="swipe">
+    <div class="swipe-wrap">
+        <!-- ................page 1...........-->
+        <div class="page">
+            <div class="text-body">
+                <p>
+                    This is a guided encounter with a tree, so it is best that you listen in the company of trees. You will be led through a series of observations, reflections and movements in relation to trees. The encounter lasts just over 20 minutes. So find a spot among trees, turn off the ringer of your device, and when you are ready, swipe to the next screen to begin <em>Trees Are Fags</em>.
+                </p>
+                <p align="right">
+                    <a onclick="nextAndLoad()" href="#">Click here to continue &gt;</a>
+                </p>
+            </div>
+        </div>
+        <!-- ................page 2...........-->
+        <div class="page">
+            <div class="controls">
+                <div class="controlButton" id="rew"></div>
+                <div class="controlButton play loading" id="playpause"></div>
+                <div class="controlButton" id="ffw"></div>
+            </div>
+        </div>
+        <!-- ................page 3...........-->
+        <div class="page">
+            <div class="text-body">
+                <p>
+                    <em>Trees are Fags</em> is an encounter created in 2018 by Benny Nemerofsky Ramsay, programmed and sound designed by Nikita Gaidakov. The piece features the voices of Matt Carter, Oskar Kirk Hansen, Bastien Pourtout, Edward Twaddle, Alberta Whittle and Virginia Woolf. Fragments from Sofia Gubaidulina’s <em>Sonata for Two Bassoons</em> (1977) was performed by Ronan Whittern. <em>Trees are Fags</em> was commissioned by Lux and co-produced by the <em>Cruising the Seventies</em> research team at the Edinburgh College of Art. For more information on Benny Nemerofsky Ramsay, visit <a href="http://www.nemerofsky.ca">www.nemerofsky.ca</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
