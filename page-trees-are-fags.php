@@ -242,29 +242,6 @@ Template Name: Trees Are Fags
             }, 10000);
 		}
 
-		// object manages pool of shuffled cues (as filenames only)
-		function Cues(total) {
-			console.log("Cues created");
-
-			this.fileList = [];
-			this.total = total;
-			this.used = 0; // how many cues have been given away
-
-			// initialise filenames array
-			for (var i = 0; i < this.total; ++i) {
-				this.fileList[i] = getFileName(i+1);
-			}
-			// shuffle
-			this.fileList = shuffleArray(this.fileList);
-
-			// get next filename from array
-			this.getNextCue = function() {
-				if (this.used < this.total) {
-					return this.fileList[this.used++];
-				}
-			};
-		}
-
 		// main Player object
 		function Player(startTime, skipTime) {
 
