@@ -193,13 +193,6 @@ Template Name: Trees Are Fags
 			playButton.click(function() { player.playPause(); });
 
             // setup player
-            var cuePoolTotal = 15; // total number of phrases in the pool
-            cues = new Cues(cuePoolTotal);
-            // DEFINE CUE POSITIONS HERE
-            var playlist = [
-                [261.26, 291.1], [356.18, 375.36], [430.94, 454.95], [529.53, 544.28], [647.82, 671.1], [746.13, 759.9],
-                [888.74, 925.97], [1022.92, 1053.32]
-            ];
             var startTime = 200;
             var skipTime = 5; // seconds to skip forward/back using buttons
             player = new Player(startTime, playlist, skipTime);
@@ -272,97 +265,14 @@ Template Name: Trees Are Fags
 			};
 		}
 
-		function Cue(triggers) {
-			this.start = triggers[0]; // start time in main narration timeline
-            this.waitTrigger = triggers[1]; // start time in main narration timeline
-			this.active = false;
-			this.hasLoaded = false;
-
-			var file = cues.getNextCue();
-			this.audio = new Audio(file);
-			this.audio.preload = 'auto';
-
-            var me = this; // binding
-            this.audio.addEventListener('ended', function() { me.ended(); });
-			this.audio.addEventListener('canplaythrough', function() { me.loaded(); });
-		}
-
-		Cue.prototype =
-        {
-            loaded: function() {
-                console.log('Cue loaded');
-                this.hasLoaded = true;
-                if (player.waitLoad) {
-                    player.audioUnwaiting();
-                }
-            },
-
-            preload: function() {
-                this.audio.play();
-                var me = this;
-                window.setTimeout(function() { me.audio.pause(); }, 5);
-                // calculate end time in main timeline
-                this.end = this.start + this.audio.duration;
-                if (this.end > this.waitTrigger) {
-                    player.waitTime += this.end - this.waitTrigger;
-                    player.virtualDuration += this.end - this.waitTrigger;
-                }
-                console.log("Cue start: " + this.start + " Cue end: " + this.end + " Wait trigger: " + this
-                    .waitTrigger);
-            },
-
-			play: function() {
-			    if (!this.hasLoaded) {
-			        player.audioWaiting();
-                } else if (this.audio) {
-					this.audio.play();
-				}
-			},
-
-			pause: function() {
-				this.audio.pause();
-			},
-
-			go: function() {
-				this.active = true;
-				this.play();
-				var myCueNumber = player.curCue();
-				console.log('Cue ' + myCueNumber + ' triggered');
-			},
-
-            // played through (onEnded)
-			ended: function() {
-                console.log('Cue ended');
-                this.audio.pause();
-				this.active = false;
-				player.nextCue();
-				timeline.newBranch();
-			},
-
-			deactivate: function() {
-                console.log('Cue deactivated');
-				if (this.active) {
-					this.active = false;
-                    this.audio.pause();
-					this.audio.currentTime = 0;
-				}
-			}
-
-		};
-
 		// main Player object
-		function Player(startTime, playlist, skipTime) {
+		function Player(startTime, skipTime) {
 
 			this.skipTime = skipTime;
 			this.playing = false;
             this.preloaded = false;
-			this.waitingForCue = false;
 			this.waitLoad = false;
             this.startTime = startTime;
-            // for keeping track of global time while waiting for cues
-            this.virtualTime = 0;
-            this.virtualDuration = 0;
-            this.waitTime = 0;
 
 			// initialise main narration audio
 			this.narration = new Audio(getFileName("main-narration"));
@@ -388,24 +298,6 @@ Template Name: Trees Are Fags
 
 		Player.prototype =
         {
-			// get currently queued cue (or null)
-			curCue: function() {
-				if (this.currentCueNumber >= this.cues.length) {
-					return null;
-				}
-				return this.cues[this.currentCueNumber];
-			},
-
-			// get currently active cue (or null)
-			activeCue: function() {
-				var cue = this.curCue();
-				if (cue && cue.active) {
-					return cue;
-				} else {
-					return null;
-				}
-			},
-
 			play: function() {
                 this.playing = true;
 				if (!this.waitingForCue) this.narration.play();
@@ -492,27 +384,6 @@ Template Name: Trees Are Fags
                     this.waitForCue();
                 }
 			},
-
-            nextCue: function() {
-			    if (this.waitingForCue) {
-			        this.waitingForCue = false;
-			        this.narration.play();
-                }
-			    this.currentCueNumber++;
-                var cue = this.curCue();
-                if (cue) {
-                    // cue.setup();
-                }
-            },
-
-            waitForCue: function() {
-			    if (!this.waitingForCue) {
-                    console.log('Waiting for cue');
-			        this.waitingForCue = true;
-			        this.narration.pause();
-                }
-            },
-
             // finished playing through
             ended: function() {
                 this.pause();
