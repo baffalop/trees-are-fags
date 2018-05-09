@@ -190,7 +190,7 @@ Template Name: Trees Are Fags
 		function init() {
 		    // setup jQuery refs
 			playButton = $('#playpause');
-			playButton.click(function() { player.playPause(); });
+			playButton.click( () => { player.playPause(); });
 
             // setup player
             var cuePoolTotal = 15; // total number of phrases in the pool
@@ -244,7 +244,7 @@ Template Name: Trees Are Fags
 				}
 			});
 			// report seek time
-            window.setInterval(function() {
+            window.setInterval( () => {
                 console.log("Play position: " + player.narration.currentTime);
             }, 10000);
 		}
@@ -367,12 +367,11 @@ Template Name: Trees Are Fags
 			// initialise main narration audio
 			this.narration = new Audio(getFileName("main-narration"));
 			this.narration.preload = "auto";
-			var me = this; // retain binding
-            this.narration.addEventListener('canplaythrough', function() { me.loaded(); });
-			this.narration.addEventListener('timeupdate', function() { me.seek(); });
-			this.narration.addEventListener('ended', function() { me.ended(); });
-			this.narration.addEventListener('waiting', function() { me.audioWaiting(); });
-			this.narration.addEventListener('playing', function() { me.audioUnwaiting(); });
+            this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
+			this.narration.addEventListener('timeupdate',  () => { this.seek(); });
+			this.narration.addEventListener('ended',  () => { this.ended(); });
+			this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
+			this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
 
 			// initialise cues
 			this.cues = [];
@@ -544,8 +543,8 @@ Template Name: Trees Are Fags
 			    console.log('loaded');
                 playButton.removeClass('loading');
                 this.virtualDuration += this.narration.duration;
-                $('#rew').click(function() { player.rew(); });
-                $('#ffw').click(function() { player.ffw(); });
+                $('#rew').click( () => { this.rew(); });
+                $('#ffw').click( () => { this.ffw(); });
             },
 
             // if any element that needs to play now hasn't loaded (or onWaiting events)
