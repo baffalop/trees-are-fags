@@ -198,7 +198,7 @@
                 pad         : 10,
                 offsetY     : 100,
                 segInterval : 0.05,
-                weight      : 3
+                lineWeight  : 3
             };
             timeline = new Timeline(tlSettings);
             // setup swipe
@@ -343,29 +343,29 @@
             this.preloaded = false;
 			this.waitForCue = false;
 			this.waitLoad = false;
+            this.skipTime = skipTime;
             this.startTime = startTime;
 
 			// initialise main narration audio
 			this.narration = new Audio(getFileName("main-narration"));
 			this.narration.preload = "auto";
-			var me = this; // retain binding
             this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
-            this.narration.addEventListener('timeupdate',  () => { this.seek(); });
-            this.narration.addEventListener('ended',  () => { this.ended(); });
-            this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
-            this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
+			this.narration.addEventListener('timeupdate',  () => { this.seek(); });
+			this.narration.addEventListener('ended',  () => { this.ended(); });
+			this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
+			this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
 
-			// initialise cues
-			this.cues = [];
-			this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
-			var listlen = playlist.length;
-			console.log("listlen = " + listlen);
-			for (var i = 0; i < listlen; i++) {
-			    var newCue = new Cue(playlist[i]);
-				this.cues.push(newCue);
-				console.table(this.cues[i]);
-			}
-			this.nextCue();
+            // initialise cues
+            this.cues = [];
+            this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
+            var listlen = playlist.length;
+            console.log("listlen = " + listlen);
+            for (var i = 0; i < listlen; i++) {
+                var newCue = new Cue(playlist[i]);
+                this.cues.push(newCue);
+                console.table(this.cues[i]);
+            }
+            this.nextCue();
 		}
 
 		Player.prototype =
@@ -539,29 +539,33 @@
             this.dim = settings.dimensions;
 
             this.start = [this.pad, this.dim[1] - this.pad];
-            this.end = [this.dim[0] - this.pad, this.dim[1] - this.offsetY];
+            this.end = [this.dim[0] - this.pad, this.start[1] - this.offsetY];
             this.range = this.end[1] - this.pad;
 
-            // line segments
+            // setup first line segment
             this.segs = [];
             var firstPoint = this.start;
-            firstPoint.push(0);
-            var firstSeg = [firstPoint, this.pickPoint(this.segInterval)];
+            firstPoint.push(0); // 2th index is time value
+            var secondPoint = this.pickPoint(this.segInterval);
+            var firstSeg = [firstPoint, secondPoint];
             this.segs.push(firstSeg);
+            console.table(this.segs[0]);
 
             // and finally, our canvas
             this.canvas = $('#timeline')[0].getContext('2d');
             this.canvas.lineCap = 'round';
-            this.canvas.lineWidth = settings.weight;
+            this.canvas.lineWidth = settings.lineWeight;
             this.canvas.strokeStyle = 'rgba(255,255,255,0.9)';
         }
 
         Timeline.prototype =
         {
             interp: function(pointFrom, pointTo, value) {
-                var x = pointFrom[0] + (pointTo[0] - pointFrom[0])*value;
-                var y = pointFrom[1] + (pointTo[1] - pointFrom[1])*value;
-                return [x, y, value];
+                var vector = [pointTo[0] - pointFrom[0], pointTo[1] - pointFrom[1]];
+                var x = pointFrom[0] + value * vector[0];
+                var y = pointFrom[1] + value * vector[1];
+                var result = [x, y, value];
+                return result;
             },
 
             // interpolate for whole timeline
@@ -594,7 +598,6 @@
 
             draw: function(value) {
                 var lastSeg = this.segs.length - 1;
-                var vtp = this.valueToPoint(value);
                 // add new segments to reach value
                 while (value > this.segs[lastSeg][1][2]) {
                     this.newSeg();
@@ -613,13 +616,13 @@
                     this.canvas.stroke();
                 }
                 // remove spare segments
-                while (i < this.segs.length) this.segs.pop();
+                while (i < this.segs.length - 1) this.segs.pop();
                 // draw current segment
                 var relativeValue = (value-this.segs[i][0][2])*(this.segs[i][1][2] -
                                     this.segs[i][0][2]);
-                canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
+                this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
                 var endPoint = this.interp(this.segs[i][0], this.segs[i][1], relativeValue);
-                canvas.lineTo(endPoint[0], endPoint[1]);
+                this.canvas.lineTo(endPoint[0], endPoint[1]);
                 this.lastValue = value;
             }
         };
