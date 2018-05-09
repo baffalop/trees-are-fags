@@ -195,7 +195,7 @@ Template Name: Trees Are Fags
             // setup player
             var startTime = 200;
             var skipTime = 5; // seconds to skip forward/back using buttons
-            player = new Player(startTime, playlist, skipTime);
+            player = new Player(startTime, skipTime);
             // initialise timeline
             var tlDim = [600, 250];
             var tlPad = 10;
@@ -245,10 +245,9 @@ Template Name: Trees Are Fags
 		// main Player object
 		function Player(startTime, skipTime) {
 
-			this.skipTime = skipTime;
 			this.playing = false;
-            this.preloaded = false;
 			this.waitLoad = false;
+            this.skipTime = skipTime;
             this.startTime = startTime;
 
 			// initialise main narration audio
@@ -260,34 +259,19 @@ Template Name: Trees Are Fags
 			this.narration.addEventListener('ended', function() { me.ended(); });
 			this.narration.addEventListener('waiting', function() { me.audioWaiting(); });
 			this.narration.addEventListener('playing', function() { me.audioUnwaiting(); });
-
-			// initialise cues
-			this.cues = [];
-			this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
-			var listlen = playlist.length;
-			for (var i = 0; i < listlen; i++) {
-			    var newCue = new Cue(playlist[i]);
-				this.cues.push(newCue);
-				console.table(this.cues[i]);
-			}
-			this.nextCue();
 		}
 
 		Player.prototype =
         {
 			play: function() {
                 this.playing = true;
-				if (!this.waitingForCue) this.narration.play();
-				var cue = this.activeCue();
-				if (cue) cue.play();
+				this.narration.play();
 				playButton.addClass('pause');
 			},
 
 			pause: function() {
 				this.playing = false;
-				if (!this.waitingForCue) this.narration.pause();
-				var cue = this.activeCue();
-				if (cue) cue.pause();
+				this.narration.pause();
 				playButton.removeClass('pause');
 			},
 
@@ -303,33 +287,7 @@ Template Name: Trees Are Fags
 
             // skip forwards/backwards [amount] secs
 			skip: function(amount) {
-				var newNarrationTime = this.narration.currentTime + amount;
-				// skip in current active cue
-				var cue = this.curCue();
-				if (cue) {
-					if (cue.active) {
-					    // are we stepping out of the time bounds of currently playing cue?
-						if (newNarrationTime < cue.start) {
-							cue.deactivate();
-						} else if (newNarrationTime > cue.end) {
-							cue.ended();
-						} else {
-							cue.audio.currentTime += newNarrationTime - this.narration.currentTime;
-						}
-					} else if (newNarrationTime > cue.start) {
-					    // should a cue be triggered now?
-						cue.go();
-						cue.audio.currentTime += newNarrationTime - this.narration.currentTime;
-					}
-				}
-				// are we skipping back into a previous cue?
-				if (this.currentCueNumber > 0 && newNarrationTime < this.cues[this.currentCueNumber-1].end) {
-					this.currentCueNumber--;
-					cue = this.curCue();
-					cue.go();
-					cue.audio.currentTime += newNarrationTime - this.narration.currentTime;
-				}
-				// skip in narration
+			    var newNarrationTime = this.narration.currentTime + amount;
 				if (newNarrationTime > this.narration.duration) {
 					this.ended();
 				} else if (newNarrationTime < 0) {
@@ -349,26 +307,13 @@ Template Name: Trees Are Fags
 			},
 
 			seek: function() {
-			    // TODO: virtualTime update
-				var cue = this.curCue();
 				timeline.draw(this.narration.currentTime / this.narration.duration);
-				// launch next cue if we've come to its trigger
-				if (cue && !cue.active && this.narration.currentTime >= cue.start) {
-					cue.go();
-				}
-                // if we've come to the end of cue time in narration, pause to wait for cue to end
-                else if (cue.active && !this.waitingForCue && this.narration.currentTime >= cue.waitTrigger) {
-                    this.waitForCue();
-                }
 			},
+
             // finished playing through
             ended: function() {
                 this.pause();
-                var cue = this.activeCue();
-                if (cue) cue.deactivate();
-                this.waitingForCue = false;
-                this.currentCueNumber = 0;
-                this.narration.currentTime -= this.narration.currentTime;
+                this.narration.currentTime = 0;
                 swipe.slide(2, 600); // go to credits page
             },
 
@@ -377,11 +322,7 @@ Template Name: Trees Are Fags
             preload: function() {
 			    if (!this.preloaded) {
 			        this.preloaded = true;
-                    // this.narration.currentTime += this.startTime;
-                    var cueLen = this.cues.length;
-                    for (var i = 0; i < cueLen; i++) {
-                        this.cues[i].preload();
-                    }
+                    this.narration.currentTime = this.startTime;
                     this.play();
                     playButton.click(function() { player.playPause(); });
                 }
@@ -391,7 +332,6 @@ Template Name: Trees Are Fags
             loaded: function() {
 			    console.log('loaded');
                 playButton.removeClass('loading');
-                this.virtualDuration += this.narration.duration;
                 $('#rew').click(function() { player.rew(); });
                 $('#ffw').click(function() { player.ffw(); });
             },
@@ -400,15 +340,14 @@ Template Name: Trees Are Fags
             audioWaiting: function() {
                 if (!this.waitLoad) {
                     this.waitLoad = true;
-                    this.pause();
-                    this.playing = false;
+                    this.narration.pause();
                     playButton.addClass('loading');
                 }
             },
 
             // onPlaying - once an element that needs to play now has loaded
             audioUnwaiting: function() {
-                if (this.waitLoad /* and... */) {
+                if (this.waitLoad) {
                     this.waitLoad = false;
                     playButton.removeClass('loading');
                     if (this.playing) this.play();
