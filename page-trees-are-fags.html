@@ -71,7 +71,7 @@
         .controls {
             position: relative;
             float: top;
-            width: 600px;
+            width: 400px;
             height: 250px;
             display: flex;
             align-items: center;
@@ -193,7 +193,7 @@
                 dimensions  : [601, 250],
                 pad         : 10,
                 offsetY     : 100,
-                segInterval : 0.05,
+                segInterval : 0.01,
                 lineWeight  : 3
             };
             timeline = new Timeline(tlSettings);
@@ -366,7 +366,6 @@
             var secondPoint = this.pickPoint(this.segInterval);
             var firstSeg = [firstPoint, secondPoint];
             this.segs.push(firstSeg);
-            console.table(this.segs[0]);
 
             // and finally, our canvas
             this.canvas = $('#timeline')[0].getContext('2d');
@@ -435,11 +434,11 @@
                 // remove spare segments
                 while (i < this.segs.length - 1) this.segs.pop();
                 // draw current segment
-                var relativeValue = (value-this.segs[i][0][2])*(this.segs[i][1][2] -
-                                    this.segs[i][0][2]);
-                this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
+                var relativeValue = (value-this.segs[i][0][2]) / (this.segs[i][1][2] - this.segs[i][0][2]);
                 var endPoint = this.interp(this.segs[i][0], this.segs[i][1], relativeValue);
+                this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
                 this.canvas.lineTo(endPoint[0], endPoint[1]);
+                this.canvas.stroke();
                 this.lastValue = value;
             }
         };
