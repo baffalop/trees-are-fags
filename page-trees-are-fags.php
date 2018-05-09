@@ -76,7 +76,7 @@ Template Name: Trees Are Fags
         .controls {
             position: relative;
             float: top;
-            width: 600px;
+            width: 400px;
             height: 250px;
             display: flex;
             align-items: center;
@@ -178,11 +178,8 @@ Template Name: Trees Are Fags
 	src="<?php echo get_stylesheet_directory_uri().'/'; ?>js/swipe.min.js"></script>
 	<script type="text/javascript">
 
-		//
 		var playButton;
 		var swipe;
-
-		var cues;
 		var player;
 
 		$(document).ready(init);
@@ -190,31 +187,30 @@ Template Name: Trees Are Fags
 		function init() {
 		    // setup jQuery refs
 			playButton = $('#playpause');
-			playButton.click( () => { player.playPause(); });
 
             // setup player
             var startTime = 200;
             var skipTime = 5; // seconds to skip forward/back using buttons
             player = new Player(startTime, skipTime);
+            playButton.click( () => { player.playPause(); });
+            $('#rew').click( () => { player.rew(); });
+            $('#ffw').click( () => { player.ffw(); });
+
             // initialise timeline
-            var tlDim = [600, 250];
-            var tlPad = 10;
-            var tlOffset = 100;
-            var tlInt = 0.05;
-            var tlWeight = 3;
-            timeline = new Timeline(tlDim, tlPad, tlOffset, tlInt, tlWeight);
+            var tlSettings = {
+                dimensions  : [601, 250],
+                pad         : 10,
+                offsetY     : 100,
+                segInterval : 0.01,
+                lineWeight  : 3
+            };
+            timeline = new Timeline(tlSettings);
             // setup swipe
 			swipe = new Swipe($('#slider')[0], {
 				speed: 700, // of transition (ms)
 				continuous: false, // ie. don't cycle back round
 				disableScroll: true,
                 draggable: true, // swipe on desktop
-                callback: function(index, elem, dir) {
-				    // ensure that preload starts on first swipe (for iOS)
-				    if (index === 0 && dir === -1) {
-				        player.preload();
-                    }
-                }
 			});
 			swipe.setup();
 
@@ -242,18 +238,16 @@ Template Name: Trees Are Fags
             }, 10000);
 		}
 
-		// main Player object
 		function Player(startTime, skipTime) {
 
 			this.playing = false;
-			this.waitLoad = false;
+			this.waitLoad = true;
             this.skipTime = skipTime;
             this.startTime = startTime;
 
 			// initialise main narration audio
 			this.narration = new Audio(getFileName("main-narration"));
 			this.narration.preload = "auto";
-			var me = this; // retain binding
             this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
 			this.narration.addEventListener('timeupdate',  () => { this.seek(); });
 			this.narration.addEventListener('ended',  () => { this.ended(); });
@@ -277,12 +271,13 @@ Template Name: Trees Are Fags
 
 			// method called directly by pressing the play/pause button
 			playPause: function() {
-				// if the sequence has ended, restart the sequence
-				if (this.playing) {
-					this.pause();
-				} else {
-					this.play();
-				}
+			    if (!this.waitLoad) {
+                    if (this.playing) {
+                        this.pause();
+                    } else {
+                        this.play();
+                    }
+                }
 			},
 
             // skip forwards/backwards [amount] secs
@@ -291,19 +286,25 @@ Template Name: Trees Are Fags
 				if (newNarrationTime > this.narration.duration) {
 					this.ended();
 				} else if (newNarrationTime < 0) {
-				    this.narration.currentTime -= this.narration.currentTime;
+				    this.narration.currentTime = 0;
                 } else {
-                    this.narration.currentTime += newNarrationTime - this.narration.currentTime;
+                    this.narration.currentTime = newNarrationTime;
                 }
 				console.log("Skipped to: " + this.narration.currentTime);
 			},
 
 			rew: function() {
-				this.skip(-this.skipTime);
+			    if (!this.waitLoad) {
+			        console.log('REwinding');
+                    this.skip(-this.skipTime);
+                }
 			},
 
 			ffw: function() {
-				this.skip(this.skipTime);
+			    if (!this.waitLoad) {
+                    console.log('FFWing');
+                    this.skip(this.skipTime);
+                }
 			},
 
 			seek: function() {
@@ -323,24 +324,23 @@ Template Name: Trees Are Fags
 			    if (!this.preloaded) {
 			        this.preloaded = true;
                     this.narration.currentTime = this.startTime;
-                    this.play();
-                    playButton.click(function() { player.playPause(); });
+                    this.narration.play();
+                    window.setTimeout( () => { this.narration.pause(); }, 5);
                 }
             },
 
-            // for onLoaded event
+            // for canplaythrough event
             loaded: function() {
 			    console.log('loaded');
-                playButton.removeClass('loading');
-                $('#rew').click( () => { this.rew(); });
-                $('#ffw').click( () => { this.ffw(); });
+			    if (this.waitLoad) {
+			        this.audioUnwaiting();
+                }
             },
 
             // if any element that needs to play now hasn't loaded (or onWaiting events)
             audioWaiting: function() {
                 if (!this.waitLoad) {
                     this.waitLoad = true;
-                    this.narration.pause();
                     playButton.addClass('loading');
                 }
             },
@@ -350,43 +350,45 @@ Template Name: Trees Are Fags
                 if (this.waitLoad) {
                     this.waitLoad = false;
                     playButton.removeClass('loading');
-                    if (this.playing) this.play();
                 }
             },
 		};
 
-		function Timeline(dimensions, pad, offsetY, segInterval, weight)
+		function Timeline(settings)
         {
-            this.pad = pad;
-            this.offsetY = offsetY;
-            this.segInterval = segInterval;
+            this.pad = settings.pad;
+            this.offsetY = settings.offsetY;
+            this.segInterval = settings.segInterval;
             this.lastValue = 0;
-            this.dim = dimensions;
+            this.dim = settings.dimensions;
 
             this.start = [this.pad, this.dim[1] - this.pad];
-            this.end = [this.dim[0] - this.pad, this.dim[1] - this.offsetY];
+            this.end = [this.dim[0] - this.pad, this.start[1] - this.offsetY];
             this.range = this.end[1] - this.pad;
 
-            // line segments
+            // setup first line segment
             this.segs = [];
             var firstPoint = this.start;
-            firstPoint.push(0);
-            var firstSeg = [firstPoint, this.pickPoint(this.segInterval)];
+            firstPoint.push(0); // 2th index is time value
+            var secondPoint = this.pickPoint(this.segInterval);
+            var firstSeg = [firstPoint, secondPoint];
             this.segs.push(firstSeg);
 
             // and finally, our canvas
             this.canvas = $('#timeline')[0].getContext('2d');
             this.canvas.lineCap = 'round';
-            this.canvas.lineWidth = weight;
+            this.canvas.lineWidth = settings.lineWeight;
             this.canvas.strokeStyle = 'rgba(255,255,255,0.9)';
         }
 
         Timeline.prototype =
         {
             interp: function(pointFrom, pointTo, value) {
-                var x = pointFrom[0] + (pointTo[0] - pointFrom[0])*value;
-                var y = pointFrom[1] + (pointTo[1] - pointFrom[1])*value;
-                return [x, y, value];
+                var vector = [pointTo[0] - pointFrom[0], pointTo[1] - pointFrom[1]];
+                var x = pointFrom[0] + value * vector[0];
+                var y = pointFrom[1] + value * vector[1];
+                var result = [x, y, value];
+                return result;
             },
 
             // interpolate for whole timeline
@@ -419,7 +421,6 @@ Template Name: Trees Are Fags
 
             draw: function(value) {
                 var lastSeg = this.segs.length - 1;
-                var vtp = this.valueToPoint(value);
                 // add new segments to reach value
                 while (value > this.segs[lastSeg][1][2]) {
                     this.newSeg();
@@ -438,13 +439,13 @@ Template Name: Trees Are Fags
                     this.canvas.stroke();
                 }
                 // remove spare segments
-                while (i < this.segs.length) this.segs.pop();
+                while (i < this.segs.length - 1) this.segs.pop();
                 // draw current segment
-                var relativeValue = (value-this.segs[i][0][2])*(this.segs[i][1][2] -
-                                    this.segs[i][0][2]);
-                canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
+                var relativeValue = (value-this.segs[i][0][2]) / (this.segs[i][1][2] - this.segs[i][0][2]);
                 var endPoint = this.interp(this.segs[i][0], this.segs[i][1], relativeValue);
-                canvas.lineTo(endPoint[0], endPoint[1]);
+                this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
+                this.canvas.lineTo(endPoint[0], endPoint[1]);
+                this.canvas.stroke();
                 this.lastValue = value;
             }
         };
@@ -536,6 +537,8 @@ Template Name: Trees Are Fags
                 <p>
                     <em>Trees are Fags</em> is an encounter created in 2018 by Benny Nemerofsky Ramsay, programmed and sound designed by Nikita Gaidakov. The piece features the voices of Matt Carter, Oskar Kirk Hansen, Bastien Pourtout, Edward Twaddle, Alberta Whittle and Virginia Woolf. Fragments from Sofia Gubaidulina’s <em>Sonata for Two Bassoons</em> (1977) was performed by Ronan Whittern. <em>Trees are Fags</em> was commissioned by Lux and co-produced by the <em>Cruising the Seventies</em> research team at the Edinburgh College of Art. For more information on Benny Nemerofsky Ramsay, visit <a href="http://www.nemerofsky.ca">www.nemerofsky.ca</a>.
                 </p>
+                <!-- TODO: increase space between <p>s via CSS -->
+                <p align="center"><img src="<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/logos.png" width="150" /></p>
             </div>
         </div>
     </div>
