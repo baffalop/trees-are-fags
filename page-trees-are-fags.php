@@ -189,7 +189,7 @@ Template Name: Trees Are Fags
 			playButton = $('#playpause');
 
             // setup player
-            var startTime = 200;
+            var startTime = 0;
             var skipTime = 5; // seconds to skip forward/back using buttons
             player = new Player(startTime, skipTime);
             playButton.click( () => { player.playPause(); });
@@ -308,7 +308,7 @@ Template Name: Trees Are Fags
 			},
 
 			seek: function() {
-				timeline.draw(this.narration.currentTime / this.narration.duration);
+				// timeline.draw(this.narration.currentTime / this.narration.duration);
 			},
 
             // finished playing through
