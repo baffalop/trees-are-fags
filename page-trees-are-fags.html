@@ -189,12 +189,14 @@
             var skipTime = 5; // seconds to skip forward/back using buttons
             player = new Player(startTime, skipTime);
             // initialise timeline
-            var tlDim = [600, 250];
-            var tlPad = 10;
-            var tlOffset = 100;
-            var tlInt = 0.05;
-            var tlWeight = 3;
-            timeline = new Timeline(tlDim, tlPad, tlOffset, tlInt, tlWeight);
+            var tlSettings = {
+                dimensions  : [601, 250],
+                pad         : 10,
+                offsetY     : 100,
+                segInterval : 0.05,
+                weight      : 3
+            };
+            timeline = new Timeline(tlSettings);
             // setup swipe
 			swipe = new Swipe($('#slider')[0], {
 				speed: 700, // of transition (ms)
@@ -347,13 +349,13 @@
             },
 		};
 
-		function Timeline(dimensions, pad, offsetY, segInterval, weight)
+		function Timeline(settings)
         {
-            this.pad = pad;
-            this.offsetY = offsetY;
-            this.segInterval = segInterval;
+            this.pad = settings.pad;
+            this.offsetY = settings.offsetY;
+            this.segInterval = settings.segInterval;
             this.lastValue = 0;
-            this.dim = dimensions;
+            this.dim = settings.dimensions;
 
             this.start = [this.pad, this.dim[1] - this.pad];
             this.end = [this.dim[0] - this.pad, this.dim[1] - this.offsetY];
@@ -369,7 +371,7 @@
             // and finally, our canvas
             this.canvas = $('#timeline')[0].getContext('2d');
             this.canvas.lineCap = 'round';
-            this.canvas.lineWidth = weight;
+            this.canvas.lineWidth = settings.weight;
             this.canvas.strokeStyle = 'rgba(255,255,255,0.9)';
         }
 
