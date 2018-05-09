@@ -1,14 +1,7 @@
-<?php
-<?php echo get_stylesheet_directory_uri().'/'; ?>
-/*
-Template Name: Trees Are Fags
-*/
-?>
 <html>
 <head>
-	<!--<link rel="stylesheet" type="<?php echo get_stylesheet_directory_uri().'/'; ?>text/css" href="<?php echo get_stylesheet_uri(); ?>">-->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <link href="https://fonts.googleapis.<?php echo get_stylesheet_directory_uri().'/'; ?>com/css?family=EB+Garamond" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet">
     <style>
 
         .swipe {
@@ -45,7 +38,7 @@ Template Name: Trees Are Fags
             height: 100%;
             margin: 0px;
             padding: 0px;
-            background: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/background-large.jpeg);
+            background: url(imgs/background-large.jpeg);
             background-size: cover;
             background-position: 50% 0%;
         }
@@ -65,6 +58,13 @@ Template Name: Trees Are Fags
             transform: translateX(-50%);
             height: 220px;
             width: auto;
+        }
+
+        .timeline {
+            position: absolute;
+            top: 400px;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         /* player controls */
@@ -94,17 +94,17 @@ Template Name: Trees Are Fags
         }
 
         #ffw {
-            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-fw.png);
+            background-image: url(imgs/wind-fw.png);
             background-position: 100%;
         }
 
         #rew {
-            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-back.png);
+            background-image: url(imgs/wind-back.png);
             background-position: 0%;
         }
 
         #playpause {
-            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/play-pause-wait.png);
+            background-image: url(imgs/play-pause-wait.png);
             width: 180px;
             background-size: 100% auto;
         }
@@ -140,7 +140,7 @@ Template Name: Trees Are Fags
         .text-body {
             text-align: justify;
             float: bottom;
-            max-width: 430;
+            max-width: 430px;
             padding: 10px;
             margin: 10px;
         }
@@ -168,17 +168,13 @@ Template Name: Trees Are Fags
 
     </style>
 	<script type="text/javascript"
-	src="<?php echo get_stylesheet_directory_uri().'/'; ?>js/jquery-3.3.1.min.js"></script>
+	src="js/jquery-3.3.1.min.js"></script>
 	<script type="text/javascript"
-	src="<?php echo get_stylesheet_directory_uri().'/'; ?>js/swipe.min.js"></script>
+	src="js/swipe.min.js"></script>
 	<script type="text/javascript">
 
-		//
 		var playButton;
-		var loadBar;
 		var swipe;
-
-		var cues;
 		var player;
 
 		$(document).ready(init);
@@ -186,7 +182,7 @@ Template Name: Trees Are Fags
 		function init() {
 		    // setup jQuery refs
 			playButton = $('#playpause');
-			loadBar = $('.loadBar');
+			playButton.click( () => { player.playPause(); });
 
             // setup player
             var cuePoolTotal = 15; // total number of phrases in the pool
@@ -195,8 +191,16 @@ Template Name: Trees Are Fags
             var playlist = [261.26, 356.18, 430.94, 529.53, 647.82, 746.13, 888.74, 1022.92];
             var startTime = 200;
             var skipTime = 5; // seconds to skip forward/back using buttons
-            player = new Player(startTime, playlist, skipTime);
-
+            player = new Player(startTime, skipTime);
+            // initialise timeline
+            var tlSettings = {
+                dimensions  : [601, 250],
+                pad         : 10,
+                offsetY     : 100,
+                segInterval : 0.05,
+                weight      : 3
+            };
+            timeline = new Timeline(tlSettings);
             // setup swipe
 			swipe = new Swipe($('#slider')[0], {
 				speed: 700, // of transition (ms)
@@ -223,13 +227,17 @@ Template Name: Trees Are Fags
 				// setup keys
 				var keycode = e.keyCode || e.which;
 				// test keys
-				if (keycode == Key.LEFT) {
+				if (keycode === Key.LEFT) {
 					swipe.prev();
-				} else if (keycode == Key.RIGHT) {
+				} else if (keycode === Key.RIGHT) {
 				    if (swipe.getPos() === 0) player.preload();
 					swipe.next();
 				}
 			});
+			// report seek time
+            window.setInterval( () => {
+                console.log("Play position: " + player.narration.currentTime);
+            }, 10000);
 		}
 
 		// object manages pool of shuffled cues (as filenames only)
@@ -341,11 +349,11 @@ Template Name: Trees Are Fags
 			this.narration = new Audio(getFileName("main-narration"));
 			this.narration.preload = "auto";
 			var me = this; // retain binding
-            this.narration.addEventListener('canplaythrough', function() { me.loaded(); });
-			this.narration.addEventListener('timeupdate', function() { me.seek(); });
-			this.narration.addEventListener('ended', function() { me.ended(); });
-			this.narration.addEventListener('waiting', function() { me.audioWaiting(); });
-			this.narration.addEventListener('playing', function() { me.audioUnwaiting(); });
+            this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
+            this.narration.addEventListener('timeupdate',  () => { this.seek(); });
+            this.narration.addEventListener('ended',  () => { this.ended(); });
+            this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
+            this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
 
 			// initialise cues
 			this.cues = [];
@@ -381,11 +389,6 @@ Template Name: Trees Are Fags
 			},
 
 			play: function() {
-			    // TODO: not sure about this
-			    if (this.waitLoad) {
-                    this.audioWaiting();
-                    return;
-                }
                 this.playing = true;
 				if (!this.waitForCue) this.narration.play();
 				var cue = this.activeCue();
@@ -442,9 +445,11 @@ Template Name: Trees Are Fags
 				// skip in narration
 				if (newNarrationTime > this.narration.duration) {
 					this.ended();
-				} else {
-					this.narration.currentTime = Math.max(newNarrationTime, 0);
-				}
+				} else if (newNarrationTime < 0) {
+				    this.narration.currentTime -= this.narration.currentTime;
+                } else {
+                    this.narration.currentTime += newNarrationTime - this.narration.currentTime;
+                }
 				console.log("Skipped to: " + this.narration.currentTime);
 			},
 
@@ -461,6 +466,7 @@ Template Name: Trees Are Fags
 				if (cue && !cue.active && this.narration.currentTime >= cue.start) { // test we haven't run out of cues yet
 					cue.go();
 				}
+                timeline.draw(this.narration.currentTime / this.narration.duration);
 			},
 
             nextCue: function() {
@@ -486,9 +492,10 @@ Template Name: Trees Are Fags
             // (needs to be in an on-click event)
             preload: function() {
 			    if (!this.preloaded) {
-                    this.narration.play();
-                    this.narration.pause();
-                    // this.narration.currentTime = this.startTime;
+			        this.preloaded = true;
+                    this.narration.currentTime = this.startTime;
+                    this.play();
+                    playButton.click(function() { player.playPause(); });
                     var cueLen = this.cues.length;
                     for (var i = 0; i < cueLen; i++) {
                         this.cues[i].preload();
@@ -500,16 +507,15 @@ Template Name: Trees Are Fags
             loaded: function() {
 			    console.log('loaded');
                 playButton.removeClass('loading');
-                $('.play').click(function() { player.playPause(); });
-                $('#rew').click(function() { player.rew(); })
-                $('#ffw').click(function() { player.ffw(); })
+                $('#rew').click( () => { this.rew(); });
+                $('#ffw').click( () => { this.ffw(); });
             },
 
             // if any element that needs to play now hasn't loaded (or onWaiting events)
             audioWaiting: function() {
                 if (!this.waitLoad) {
                     this.waitLoad = true;
-                    this.pause();
+                    this.narration.pause();
                     playButton.addClass('loading');
                 }
             },
@@ -519,10 +525,104 @@ Template Name: Trees Are Fags
                 if (this.waitLoad /* and... */) {
                     this.waitLoad = false;
                     playButton.removeClass('loading');
-                    this.play();
+                    if (this.playing) this.play();
                 }
             },
 		};
+
+		function Timeline(settings)
+        {
+            this.pad = settings.pad;
+            this.offsetY = settings.offsetY;
+            this.segInterval = settings.segInterval;
+            this.lastValue = 0;
+            this.dim = settings.dimensions;
+
+            this.start = [this.pad, this.dim[1] - this.pad];
+            this.end = [this.dim[0] - this.pad, this.dim[1] - this.offsetY];
+            this.range = this.end[1] - this.pad;
+
+            // line segments
+            this.segs = [];
+            var firstPoint = this.start;
+            firstPoint.push(0);
+            var firstSeg = [firstPoint, this.pickPoint(this.segInterval)];
+            this.segs.push(firstSeg);
+
+            // and finally, our canvas
+            this.canvas = $('#timeline')[0].getContext('2d');
+            this.canvas.lineCap = 'round';
+            this.canvas.lineWidth = settings.weight;
+            this.canvas.strokeStyle = 'rgba(255,255,255,0.9)';
+        }
+
+        Timeline.prototype =
+        {
+            interp: function(pointFrom, pointTo, value) {
+                var x = pointFrom[0] + (pointTo[0] - pointFrom[0])*value;
+                var y = pointFrom[1] + (pointTo[1] - pointFrom[1])*value;
+                return [x, y, value];
+            },
+
+            // interpolate for whole timeline
+            valueToPoint: function(value) {
+                return this.interp(this.start, this.end, value);
+            },
+
+            // pick a new point at [value] along the line, with Y wiggle
+            pickPoint: function(value) {
+                var point = this.valueToPoint(value); // choose a point along the baseline
+                point[1] -= Math.random()*this.range; // add a random Y offset
+                return point;
+            },
+
+            // commence a new segment of the line
+            newSeg: function() {
+                var lastSeg = this.segs.length - 1;
+                var joint = this.segs[lastSeg][1]; // make end of last seg start of new one
+                var newValue = this.segs[lastSeg][1][2] + this.segInterval;
+                var segEnd = this.pickPoint(newValue);
+                this.segs.push([joint, segEnd]);
+            },
+
+            // commence a new segment, broken off from the previous one
+            newBranch: function() {
+                this.newSeg();
+                var lastSeg = this.segs.length-1;
+                this.segs[lastSeg][0] = this.pickPoint(this.segs[lastSeg][0][2]);
+            },
+
+            draw: function(value) {
+                var lastSeg = this.segs.length - 1;
+                var vtp = this.valueToPoint(value);
+                // add new segments to reach value
+                while (value > this.segs[lastSeg][1][2]) {
+                    this.newSeg();
+                    lastSeg ++;
+                }
+                // get first segment that needs redrawn
+                for (var i = lastSeg - 1; i >= 0 && this.lastValue < this.segs[i][1][2]; i--)
+                    ;
+                i = i < 0 ? 0 : i;
+                // clear canvas from segs[lastSeg][0][0] to segs[lastSeg][1][0]
+                this.canvas.clearRect(this.segs[i][0][0], 0, this.dim[0], this.dim[1]);
+                // fill in all previously unrendered whole segments
+                for (; i < lastSeg && value < this.segs[i][1][2]; i ++) {
+                    this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
+                    this.canvas.lineTo(this.segs[i][1][0], this.segs[i][1][1]);
+                    this.canvas.stroke();
+                }
+                // remove spare segments
+                while (i < this.segs.length) this.segs.pop();
+                // draw current segment
+                var relativeValue = (value-this.segs[i][0][2])*(this.segs[i][1][2] -
+                                    this.segs[i][0][2]);
+                canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
+                var endPoint = this.interp(this.segs[i][0], this.segs[i][1], relativeValue);
+                canvas.lineTo(endPoint[0], endPoint[1]);
+                this.lastValue = value;
+            }
+        };
 
 		// for 'continue' button - swipe to next page and preload
 		function nextAndLoad() {
@@ -531,10 +631,10 @@ Template Name: Trees Are Fags
 		}
 
 		function getFileName(affix) {
-			var dir = "<?php echo get_stylesheet_directory_uri().'/'; ?>audio/"; // directory/URI
+			var dir = "audio/"; // directory/URI
 			var prefix = "cue-"; // prefix if cue (ie. if passed a number)
 			var postfix = ".mp3"; // format
-			if (typeof affix == 'number') { // if passed a number, it's a cue
+			if (typeof affix === 'number') { // if passed a number, it's a cue
 				if (affix < 10) affix = '0' + affix; // 0-padding
 				return dir + prefix + affix + postfix;
 			} else { // if passed text, that's the name of the main narration file
@@ -548,7 +648,7 @@ Template Name: Trees Are Fags
 			var randomIndex, temp;
 
 			// While there remain elements to shuffle...
-			while (currentIndex != 0) {
+			while (currentIndex !== 0) {
 				// Pick a remaining element...
 				randomIndex = Math.floor(Math.random() * currentIndex);
 				currentIndex--;
@@ -582,7 +682,8 @@ Template Name: Trees Are Fags
 </head>
 <body>
 <!-- <div id="console"></div> -->
-<img src="<?php echo get_stylesheet_directory_uri().'/'; ?><?php echo get_stylesheet_directory_uri().'/'; ?>imgs/title-large.png" class="title" alt="Trees Are Fags" />
+<img src="imgs/title-large.png" class="title" alt="Trees Are Fags" />
+<div class="timeline"><canvas id="timeline" width="600" height="250"></canvas></div>
 <div id="slider" class="swipe">
     <div class="swipe-wrap">
         <!-- ................page 1...........-->
