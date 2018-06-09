@@ -8,4 +8,4 @@ Sound design and programming by Nikita Gaidakov.
 
 Commissioned by [LUX](http://lux.org.uk).
 
-**See page-trees-are-fags.php for working file**
+**See page-trees-are-fags.html for working file**
