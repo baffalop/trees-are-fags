@@ -31,7 +31,7 @@ Template Name: Trees Are Fags
         }
 
         .page {
-            top: 50px;
+            top: 20px;
             /*width: 100%;*/
             /*display: flex;*/
             /*flex-direction: column;*/
@@ -58,11 +58,12 @@ Template Name: Trees Are Fags
 
         .title {
             position: relative;
-            top: 40px;
+            top: 30px;
             left: 50%;
             transform: translateX(-50%);
             height: 220px;
             width: auto;
+            max-width: 100%;
         }
 
         .timeline {
@@ -76,7 +77,7 @@ Template Name: Trees Are Fags
         .controls {
             position: relative;
             float: top;
-            width: 400px;
+            max-width: 100%;
             height: 250px;
             display: flex;
             align-items: center;
@@ -148,6 +149,7 @@ Template Name: Trees Are Fags
             max-width: 430px;
             padding: 10px;
             margin: 10px;
+            margin-bottom: 30px;
         }
 
         a {
@@ -190,7 +192,7 @@ Template Name: Trees Are Fags
 
             // setup player
             var startTime = 0;
-            var skipTime = 5; // seconds to skip forward/back using buttons
+            var skipTime = 10; // seconds to skip forward/back using buttons
             player = new Player(startTime, skipTime);
             playButton.click( () => { player.playPause(); });
             $('#rew').click( () => { player.rew(); });
@@ -204,13 +206,14 @@ Template Name: Trees Are Fags
                 segInterval : 0.01,
                 lineWeight  : 3
             };
-            timeline = new Timeline(tlSettings);
+            // timeline = new Timeline(tlSettings);
+
             // setup swipe
-			swipe = new Swipe($('#slider')[0], {
+            var swipeElement = $('#slider');
+			swipe = new Swipe(swipeElement[0], {
 				speed: 700, // of transition (ms)
 				continuous: false, // ie. don't cycle back round
-				disableScroll: true,
-                draggable: true, // swipe on desktop
+				disableScroll: false
 			});
 			swipe.setup();
 
@@ -242,11 +245,12 @@ Template Name: Trees Are Fags
 
 			this.playing = false;
 			this.waitLoad = true;
+            this.preloaded = false;
             this.skipTime = skipTime;
             this.startTime = startTime;
 
 			// initialise main narration audio
-			this.narration = new Audio(getFileName("main-narration"));
+			this.narration = new Audio(getFileName("main-narration-updated"));
 			this.narration.preload = "auto";
             this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
 			this.narration.addEventListener('timeupdate',  () => { this.seek(); });
@@ -271,7 +275,12 @@ Template Name: Trees Are Fags
 
 			// method called directly by pressing the play/pause button
 			playPause: function() {
-			    if (!this.waitLoad) {
+			    if (!this.preloaded) {
+			        this.preload();
+			        this.play();
+			        playButton.addClass('loading');
+                }
+                if (!this.waitLoad) {
                     if (this.playing) {
                         this.pause();
                     } else {
@@ -325,7 +334,7 @@ Template Name: Trees Are Fags
 			        this.preloaded = true;
                     this.narration.currentTime = this.startTime;
                     this.narration.play();
-                    window.setTimeout( () => { this.narration.pause(); }, 5);
+                    if (!this.playing) window.setTimeout( () => { this.narration.pause(); }, 50);
                 }
             },
 
@@ -350,6 +359,7 @@ Template Name: Trees Are Fags
                 if (this.waitLoad) {
                     this.waitLoad = false;
                     playButton.removeClass('loading');
+                    if (this.playing) this.narration.play();
                 }
             },
 		};
@@ -507,9 +517,10 @@ Template Name: Trees Are Fags
 	</script>
 </head>
 <body>
-<!-- <div id="console"></div> -->
-<img src="<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/title-large.png" class="title" alt="Trees Are Fags" />
-<div class="timeline"><canvas id="timeline" width="600" height="250"></canvas></div>
+<!-- <div id="console"></div>-->
+<img src="<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/title-large-nounderline.png" class="title" alt="Trees
+Are Fags" />
+<!--<div class="timeline"><canvas id="timeline" width="600" height="250"></canvas></div>-->
 <div id="slider" class="swipe">
     <div class="swipe-wrap">
         <!-- ................page 1...........-->
@@ -519,7 +530,7 @@ Template Name: Trees Are Fags
                     This is a guided encounter with a tree, so it is best that you listen in the company of trees. You will be led through a series of observations, reflections and movements in relation to trees. The encounter lasts just over 20 minutes. So find a spot among trees, turn off the ringer of your device, and when you are ready, swipe to the next screen to begin <em>Trees Are Fags</em>.
                 </p>
                 <p align="right">
-                    <a onclick="nextAndLoad()" href="#">Click here to continue &gt;</a>
+                    <a onclick="nextAndLoad()" href="#">Continue &gt;</a>
                 </p>
             </div>
         </div>
@@ -527,7 +538,7 @@ Template Name: Trees Are Fags
         <div class="page">
             <div class="controls">
                 <div class="controlButton" id="rew"></div>
-                <div class="controlButton play loading" id="playpause"></div>
+                <div class="controlButton play" id="playpause"></div>
                 <div class="controlButton" id="ffw"></div>
             </div>
         </div>
