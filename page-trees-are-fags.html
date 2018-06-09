@@ -1,7 +1,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <link href="https://fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet">
+    <link href="https://fonts.googleapis.<?php echo get_stylesheet_directory_uri().'/'; ?>com/css?family=EB+Garamond" rel="stylesheet">
     <style>
 
         .swipe {
@@ -38,7 +38,7 @@
             height: 100%;
             margin: 0px;
             padding: 0px;
-            background: url(imgs/background-large.jpeg);
+            background: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/background-large.jpeg);
             background-size: cover;
             background-position: 50% 0%;
         }
@@ -71,7 +71,7 @@
         .controls {
             position: relative;
             float: top;
-            width: 600px;
+            width: 400px;
             height: 250px;
             display: flex;
             align-items: center;
@@ -94,17 +94,17 @@
         }
 
         #ffw {
-            background-image: url(imgs/wind-fw.png);
+            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-fw.png);
             background-position: 100%;
         }
 
         #rew {
-            background-image: url(imgs/wind-back.png);
+            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-back.png);
             background-position: 0%;
         }
 
         #playpause {
-            background-image: url(imgs/play-pause-wait.png);
+            background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/play-pause-wait.png);
             width: 180px;
             background-size: 100% auto;
         }
@@ -175,6 +175,8 @@
 
 		var playButton;
 		var swipe;
+
+		var cues;
 		var player;
 
 		$(document).ready(init);
@@ -182,7 +184,6 @@
 		function init() {
 		    // setup jQuery refs
 			playButton = $('#playpause');
-			playButton.click( () => { player.playPause(); });
 
             // setup player
             var cuePoolTotal = 15; // total number of phrases in the pool
@@ -192,12 +193,16 @@
             var startTime = 200;
             var skipTime = 5; // seconds to skip forward/back using buttons
             player = new Player(startTime, skipTime);
+            playButton.click( () => { player.playPause(); });
+            $('#rew').click( () => { player.rew(); });
+            $('#ffw').click( () => { player.ffw(); });
+
             // initialise timeline
             var tlSettings = {
                 dimensions  : [601, 250],
                 pad         : 10,
                 offsetY     : 100,
-                segInterval : 0.05,
+                segInterval : 0.01,
                 lineWeight  : 3
             };
             timeline = new Timeline(tlSettings);
@@ -207,12 +212,6 @@
 				continuous: false, // ie. don't cycle back round
 				disableScroll: true,
                 draggable: true, // swipe on desktop
-                callback: function(index, elem, dir) {
-				    // ensure that preload starts on first swipe (for iOS)
-				    if (index === 0 && dir === -1) {
-				        player.preload();
-                    }
-                }
 			});
 			swipe.setup();
 
@@ -234,6 +233,10 @@
 					swipe.next();
 				}
 			});
+			// report seek time
+            window.setInterval( () => {
+                console.log("Play position: " + player.narration.currentTime);
+            }, 10000);
 			// report seek time
             window.setInterval( () => {
                 console.log("Play position: " + player.narration.currentTime);
@@ -354,6 +357,11 @@
 			this.narration.addEventListener('ended',  () => { this.ended(); });
 			this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
 			this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
+            this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
+			this.narration.addEventListener('timeupdate',  () => { this.seek(); });
+			this.narration.addEventListener('ended',  () => { this.ended(); });
+			this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
+			this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
 
             // initialise cues
             this.cues = [];
@@ -406,12 +414,13 @@
 
 			// method called directly by pressing the play/pause button
 			playPause: function() {
-				// if the sequence has ended, restart the sequence
-				if (this.playing) {
-					this.pause();
-				} else {
-					this.play();
-				}
+			    if (!this.waitLoad) {
+                    if (this.playing) {
+                        this.pause();
+                    } else {
+                        this.play();
+                    }
+                }
 			},
 
             // skip forwards/backwards [amount] secs
@@ -446,19 +455,25 @@
 				if (newNarrationTime > this.narration.duration) {
 					this.ended();
 				} else if (newNarrationTime < 0) {
-				    this.narration.currentTime -= this.narration.currentTime;
+				    this.narration.currentTime = 0;
                 } else {
-                    this.narration.currentTime += newNarrationTime - this.narration.currentTime;
+                    this.narration.currentTime = newNarrationTime;
                 }
 				console.log("Skipped to: " + this.narration.currentTime);
 			},
 
 			rew: function() {
-				this.skip(-this.skipTime);
+			    if (!this.waitLoad) {
+			        console.log('REwinding');
+                    this.skip(-this.skipTime);
+                }
 			},
 
 			ffw: function() {
-				this.skip(this.skipTime);
+			    if (!this.waitLoad) {
+                    console.log('FFWing');
+                    this.skip(this.skipTime);
+                }
 			},
 
 			seek: function() {
@@ -494,8 +509,8 @@
 			    if (!this.preloaded) {
 			        this.preloaded = true;
                     this.narration.currentTime = this.startTime;
-                    this.play();
-                    playButton.click(function() { player.playPause(); });
+                    this.narration.play();
+                    window.setTimeout( () => { this.narration.pause(); }, 5);
                     var cueLen = this.cues.length;
                     for (var i = 0; i < cueLen; i++) {
                         this.cues[i].preload();
@@ -503,29 +518,27 @@
                 }
             },
 
-            // for onLoaded event
+            // for canplaythrough event
             loaded: function() {
 			    console.log('loaded');
-                playButton.removeClass('loading');
-                $('#rew').click( () => { this.rew(); });
-                $('#ffw').click( () => { this.ffw(); });
+			    if (this.waitLoad) {
+			        this.audioUnwaiting();
+                }
             },
 
             // if any element that needs to play now hasn't loaded (or onWaiting events)
             audioWaiting: function() {
                 if (!this.waitLoad) {
                     this.waitLoad = true;
-                    this.narration.pause();
                     playButton.addClass('loading');
                 }
             },
 
             // onPlaying - once an element that needs to play now has loaded
             audioUnwaiting: function() {
-                if (this.waitLoad /* and... */) {
+                if (this.waitLoad) {
                     this.waitLoad = false;
                     playButton.removeClass('loading');
-                    if (this.playing) this.play();
                 }
             },
 		};
@@ -549,7 +562,6 @@
             var secondPoint = this.pickPoint(this.segInterval);
             var firstSeg = [firstPoint, secondPoint];
             this.segs.push(firstSeg);
-            console.table(this.segs[0]);
 
             // and finally, our canvas
             this.canvas = $('#timeline')[0].getContext('2d');
@@ -618,11 +630,11 @@
                 // remove spare segments
                 while (i < this.segs.length - 1) this.segs.pop();
                 // draw current segment
-                var relativeValue = (value-this.segs[i][0][2])*(this.segs[i][1][2] -
-                                    this.segs[i][0][2]);
-                this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
+                var relativeValue = (value-this.segs[i][0][2]) / (this.segs[i][1][2] - this.segs[i][0][2]);
                 var endPoint = this.interp(this.segs[i][0], this.segs[i][1], relativeValue);
+                this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
                 this.canvas.lineTo(endPoint[0], endPoint[1]);
+                this.canvas.stroke();
                 this.lastValue = value;
             }
         };
@@ -634,7 +646,7 @@
 		}
 
 		function getFileName(affix) {
-			var dir = "audio/"; // directory/URI
+			var dir = "<?php echo get_stylesheet_directory_uri().'/'; ?>audio/"; // directory/URI
 			var prefix = "cue-"; // prefix if cue (ie. if passed a number)
 			var postfix = ".mp3"; // format
 			if (typeof affix === 'number') { // if passed a number, it's a cue
@@ -714,6 +726,8 @@
                 <p>
                     <em>Trees are Fags</em> is an encounter created in 2018 by Benny Nemerofsky Ramsay, programmed and sound designed by Nikita Gaidakov. The piece features the voices of Matt Carter, Oskar Kirk Hansen, Bastien Pourtout, Edward Twaddle, Alberta Whittle and Virginia Woolf. Fragments from Sofia Gubaidulina’s <em>Sonata for Two Bassoons</em> (1977) was performed by Ronan Whittern. <em>Trees are Fags</em> was commissioned by Lux and co-produced by the <em>Cruising the Seventies</em> research team at the Edinburgh College of Art. For more information on Benny Nemerofsky Ramsay, visit <a href="http://www.nemerofsky.ca">www.nemerofsky.ca</a>.
                 </p>
+                <!-- TODO: increase space between <p>s via CSS -->
+                <p align="center"><img src="imgs/logos.png" width="150" /></p>
             </div>
         </div>
     </div>
