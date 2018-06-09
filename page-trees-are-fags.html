@@ -182,12 +182,15 @@
 		function init() {
 		    // setup jQuery refs
 			playButton = $('#playpause');
-			playButton.click( () => { player.playPause(); });
 
             // setup player
             var startTime = 200;
             var skipTime = 5; // seconds to skip forward/back using buttons
             player = new Player(startTime, skipTime);
+            playButton.click( () => { player.playPause(); });
+            $('#rew').click( () => { player.rew(); });
+            $('#ffw').click( () => { player.ffw(); });
+
             // initialise timeline
             var tlSettings = {
                 dimensions  : [601, 250],
@@ -203,12 +206,6 @@
 				continuous: false, // ie. don't cycle back round
 				disableScroll: true,
                 draggable: true, // swipe on desktop
-                callback: function(index, elem, dir) {
-				    // ensure that preload starts on first swipe (for iOS)
-				    if (index === 0 && dir === -1) {
-				        player.preload();
-                    }
-                }
 			});
 			swipe.setup();
 
@@ -239,7 +236,7 @@
 		function Player(startTime, skipTime) {
 
 			this.playing = false;
-			this.waitLoad = false;
+			this.waitLoad = true;
             this.skipTime = skipTime;
             this.startTime = startTime;
 
@@ -269,12 +266,13 @@
 
 			// method called directly by pressing the play/pause button
 			playPause: function() {
-				// if the sequence has ended, restart the sequence
-				if (this.playing) {
-					this.pause();
-				} else {
-					this.play();
-				}
+			    if (!this.waitLoad) {
+                    if (this.playing) {
+                        this.pause();
+                    } else {
+                        this.play();
+                    }
+                }
 			},
 
             // skip forwards/backwards [amount] secs
@@ -283,19 +281,25 @@
 				if (newNarrationTime > this.narration.duration) {
 					this.ended();
 				} else if (newNarrationTime < 0) {
-				    this.narration.currentTime -= this.narration.currentTime;
+				    this.narration.currentTime = 0;
                 } else {
-                    this.narration.currentTime += newNarrationTime - this.narration.currentTime;
+                    this.narration.currentTime = newNarrationTime;
                 }
 				console.log("Skipped to: " + this.narration.currentTime);
 			},
 
 			rew: function() {
-				this.skip(-this.skipTime);
+			    if (!this.waitLoad) {
+			        console.log('REwinding');
+                    this.skip(-this.skipTime);
+                }
 			},
 
 			ffw: function() {
-				this.skip(this.skipTime);
+			    if (!this.waitLoad) {
+                    console.log('FFWing');
+                    this.skip(this.skipTime);
+                }
 			},
 
 			seek: function() {
@@ -315,24 +319,23 @@
 			    if (!this.preloaded) {
 			        this.preloaded = true;
                     this.narration.currentTime = this.startTime;
-                    this.play();
-                    playButton.click(function() { player.playPause(); });
+                    this.narration.play();
+                    window.setTimeout( () => { this.narration.pause(); }, 5);
                 }
             },
 
-            // for onLoaded event
+            // for canplaythrough event
             loaded: function() {
 			    console.log('loaded');
-                playButton.removeClass('loading');
-                $('#rew').click( () => { this.rew(); });
-                $('#ffw').click( () => { this.ffw(); });
+			    if (this.waitLoad) {
+			        this.audioUnwaiting();
+                }
             },
 
             // if any element that needs to play now hasn't loaded (or onWaiting events)
             audioWaiting: function() {
                 if (!this.waitLoad) {
                     this.waitLoad = true;
-                    this.narration.pause();
                     playButton.addClass('loading');
                 }
             },
@@ -342,7 +345,6 @@
                 if (this.waitLoad) {
                     this.waitLoad = false;
                     playButton.removeClass('loading');
-                    if (this.playing) this.play();
                 }
             },
 		};
