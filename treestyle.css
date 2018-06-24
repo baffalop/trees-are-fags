@@ -32,7 +32,7 @@ html,body {
     height: 100%;
     margin: 0px;
     padding: 0px;
-    background: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/background-large.jpeg);
+    background: url(imgs/background-large.jpeg);
     background-size: cover;
     background-position: 50% 0%;
 }
@@ -88,17 +88,17 @@ body {
 }
 
 #ffw {
-    background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-fw.png);
+    background-image: url(imgs/wind-fw.png);
     background-position: 100%;
 }
 
 #rew {
-    background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-back.png);
+    background-image: url(imgs/wind-back.png);
     background-position: 0%;
 }
 
 #playpause {
-    background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/play-pause-wait.png);
+    background-image: url(imgs/play-pause-wait.png);
     width: 180px;
     background-size: 100% auto;
 }
