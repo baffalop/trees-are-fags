@@ -1,12 +1,10 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <link href="https://fonts.googleapis.<?php echo get_stylesheet_directory_uri().'/'; ?>com/css?family=EB+Garamond" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet" />
     <link href="treestyle.css" rel="stylesheet" />
-	<script type="text/javascript"
-	src="js/jquery-3.3.1.min.js"></script>
-	<script type="text/javascript"
-	src="js/swipe.min.js"></script>
+	<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="js/swipe.min.js"></script>
 	<script type="text/javascript">
 
 		var playButton;
@@ -482,7 +480,7 @@
 		}
 
 		function getFileName(affix) {
-			var dir = "<?php echo get_stylesheet_directory_uri().'/'; ?>audio/"; // directory/URI
+			var dir = "audio/"; // directory/URI
 			var prefix = "cue-"; // prefix if cue (ie. if passed a number)
 			var postfix = ".mp3"; // format
 			if (typeof affix === 'number') { // if passed a number, it's a cue
