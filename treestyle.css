@@ -1,0 +1,161 @@
+.swipe {
+    overflow: hidden;
+    visibility: hidden;
+    position: relative;
+}
+
+.swipe-wrap {
+    overflow: hidden;
+    position: relative;
+}
+
+.swipe-wrap > div {
+    position: relative;
+    float: left;
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    justify-content: center;
+    /*align-items: center;*/
+}
+
+.page {
+    top: 50px;
+    /*width: 100%;*/
+    /*display: flex;*/
+    /*flex-direction: column;*/
+    /*justify-content: center;*/
+}
+
+html,body {
+    overflow-x: hidden;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    background: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/background-large.jpeg);
+    background-size: cover;
+    background-position: 50% 0%;
+}
+
+body {
+    position: relative;
+    font-family: 'EB Garamond', serif;
+    color: white;
+    font-size: large;
+    line-height: 1.4;
+}
+
+.title {
+    position: relative;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 220px;
+    width: auto;
+}
+
+.timeline {
+    position: absolute;
+    top: 400px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* player controls */
+.controls {
+    position: relative;
+    float: top;
+    width: 400px;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.controlButton {
+    cursor: pointer;
+    height: 100px;
+    width: 100px;
+    background: transparent;
+    background-size: 100% auto; /* image resized to div size */
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.controlButton:active {
+    opacity: 0.5;
+}
+
+#ffw {
+    background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-fw.png);
+    background-position: 100%;
+}
+
+#rew {
+    background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/wind-back.png);
+    background-position: 0%;
+}
+
+#playpause {
+    background-image: url(<?php echo get_stylesheet_directory_uri().'/'; ?>imgs/play-pause-wait.png);
+    width: 180px;
+    background-size: 100% auto;
+}
+
+.play {
+    cursor: pointer;
+    background-position: 50% 0px;
+}
+
+.pause {
+    background-position: 50% -100px;
+}
+
+.loading {
+    background-position: 50% -200px;
+    cursor: default;
+    animation: throb 2.3s infinite;
+}
+
+#console {
+    overflow: auto;
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    background-color: #fffacd;
+    width: 200px;
+    height: 200px;
+    padding: 2px;
+    font-size: smaller;
+}
+
+/* text pages */
+.text-body {
+    text-align: justify;
+    float: bottom;
+    max-width: 430px;
+    padding: 10px;
+    margin: 10px;
+}
+
+a {
+    color: #aeaeae;
+    text-decoration: none;
+}
+
+a:hover {
+    color: white;
+}
+
+a:active {
+    color: white;
+}
+
+@keyframes throb {
+    0% {opacity:  1.0;}
+    /*5%{opacity:  1.0;}*/
+    50%{opacity:  0.0;}
+    /*95%{opacity:  1.0;}*/
+    100%{opacity: 1.0;}
+}
