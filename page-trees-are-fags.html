@@ -7,12 +7,12 @@
 	<script type="text/javascript" src="js/swipe.min.js"></script>
 	<script type="text/javascript">
 
-		var playButton;
-		var swipe;
+		let playButton;
+		let swipe;
 
-		var cues;
-		var player;
-		var timeline;
+		let cues;
+		let player;
+		let timeline;
 
 		const undynamicFullNarration = 'main-narration'
 		const dynamicNarration = 'trees-are-fags-v2'
@@ -24,19 +24,20 @@
 			playButton = $('#playpause');
 
             // setup player
-            var cuePoolTotal = 10; // total number of phrases in the pool
+            const cuePoolTotal = 10; // total number of phrases in the pool
             cues = new Cues(cuePoolTotal);
             // DEFINE CUE POSITIONS HERE
-            var playlist = [261.26, 356.18, 430.94, 529.53, 647.82, 746.13, 888.74, 1022.92];
-            var startTime = 200;
-            var skipTime = 5; // seconds to skip forward/back using buttons
+            const playlist = [261.26, 356.18, 430.94, 529.53, 647.82, 746.13, 888.74, 1022.92];
+            const startTime = 200;
+            const skipTime = 5; // seconds to skip forward/back using buttons
+
             player = new Player(startTime, playlist, skipTime);
             playButton.click( () => { player.playPause(); });
             $('#rew').click( () => { player.rew(); });
             $('#ffw').click( () => { player.ffw(); });
 
             // initialise timeline
-            var tlSettings = {
+            const tlSettings = {
                 dimensions  : [601, 250],
                 pad         : 10,
                 offsetY     : 100,
@@ -54,7 +55,7 @@
 			swipe.setup();
 
             // setup left and right keys (for closure)
-            var Key = {
+            const Key = {
                 LEFT: 37,
                 RIGHT: 39
             };
@@ -62,7 +63,7 @@
 			window.addEventListener('keydown', function(e) {
 				if (!e) e = window.event;
 				// setup keys
-				var keycode = e.keyCode || e.which;
+				const keycode = e.keyCode || e.which;
 				// test keys
 				if (keycode === Key.LEFT) {
 					swipe.prev();
@@ -90,7 +91,7 @@
 			this.used = 0; // how many cues have been given away
 
 			// initialise filenames array
-			for (var i = 0; i < this.total; ++i) {
+			for (let i = 0; i < this.total; ++i) {
 				this.fileList[i] = getFileName(i+1);
 			}
 			// shuffle
@@ -99,7 +100,6 @@
 			// get next filename from array
 			this.getNextCue = function() {
 				if (this.used < this.total) {
-				    var filepath = this.fileList[this.used++];
 					return this.fileList[this.used++];
 				}
 			};
@@ -110,14 +110,13 @@
 			this.active = false;
 			this.hasLoaded = false;
 
-			var file = cues.getNextCue();
+			const file = cues.getNextCue();
 			console.log("Creating Cue on file = " + file);
 			this.audio = new Audio(file);
 			this.audio.preload = 'auto';
 
-            var me = this; // binding
-            this.audio.addEventListener('ended', function() { me.ended(); });
-			this.audio.addEventListener('canplaythrough', function() { me.loaded(); });
+            this.audio.addEventListener('ended', () => { this.ended(); });
+			this.audio.addEventListener('canplaythrough', () => { this.loaded(); });
 		}
 
 		Cue.prototype =
@@ -153,7 +152,7 @@
 			go: function() {
 				this.active = true;
 				this.play();
-				var myCueNumber = player.curCue();
+				const myCueNumber = player.curCue();
 				console.log('Cue ' + myCueNumber + ' triggered');
 			},
 
@@ -204,10 +203,10 @@
             // initialise cues
             this.cues = [];
             this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
-            var listlen = playlist.length;
+            const listlen = playlist.length;
             console.log("listlen = " + listlen);
-            for (var i = 0; i < listlen; i++) {
-                var newCue = new Cue(playlist[i]);
+            for (let i = 0; i < listlen; i++) {
+                const newCue = new Cue(playlist[i]);
                 this.cues.push(newCue);
                 console.table(this.cues[i]);
             }
@@ -226,7 +225,7 @@
 
 			// get currently active cue (or null)
 			activeCue: function() {
-				var cue = this.curCue();
+				const cue = this.curCue();
 				if (cue && cue.active) {
 					return cue;
 				} else {
@@ -237,7 +236,7 @@
 			play: function() {
                 this.playing = true;
 				if (!this.waitForCue) this.narration.play();
-				var cue = this.activeCue();
+				const cue = this.activeCue();
 				if (cue) cue.play();
 				playButton.addClass('pause');
 			},
@@ -245,7 +244,7 @@
 			pause: function() {
 				this.playing = false;
 				if (!this.waitForCue) this.narration.pause();
-				var cue = this.activeCue();
+				const cue = this.activeCue();
 				if (cue) cue.pause();
 				playButton.removeClass('pause');
 			},
@@ -263,9 +262,9 @@
 
             // skip forwards/backwards [amount] secs
 			skip: function(amount) {
-				var newNarrationTime = this.narration.currentTime + amount;
+				let newNarrationTime = this.narration.currentTime + amount;
 				// skip in current active cue
-				var cue = this.curCue();
+				let cue = this.curCue();
 				if (cue) {
 					if (cue.active) {
 					    // are we stepping out of the time bounds of currently playing cue?
@@ -315,7 +314,7 @@
 			},
 
 			seek: function() {
-				var cue = this.curCue();
+				const cue = this.curCue();
 				if (cue && !cue.active && this.narration.currentTime >= cue.start) { // test we haven't run out of cues yet
 					cue.go();
 				}
@@ -324,7 +323,7 @@
 
             nextCue: function() {
 			    this.currentCueNumber++;
-                var cue = this.curCue();
+                const cue = this.curCue();
                 if (cue) {
                     // cue.setup();
                 }
@@ -333,7 +332,7 @@
             // finished playing through
             ended: function() {
                 this.pause();
-                var cue = this.activeCue();
+                const cue = this.activeCue();
                 if (cue) cue.deactivate();
                 this.waitForCue = false;
                 this.currentCueNumber = 0;
@@ -349,8 +348,8 @@
                     this.narration.currentTime = this.startTime;
                     this.narration.play();
                     window.setTimeout( () => { this.narration.pause(); }, 5);
-                    var cueLen = this.cues.length;
-                    for (var i = 0; i < cueLen; i++) {
+                    const cueLen = this.cues.length;
+                    for (let i = 0; i < cueLen; i++) {
                         this.cues[i].preload();
                     }
                 }
@@ -395,10 +394,10 @@
 
             // setup first line segment
             this.segs = [];
-            var firstPoint = this.start;
+            let firstPoint = this.start;
             firstPoint.push(0); // 2th index is time value
-            var secondPoint = this.pickPoint(this.segInterval);
-            var firstSeg = [firstPoint, secondPoint];
+            const secondPoint = this.pickPoint(this.segInterval);
+            const firstSeg = [firstPoint, secondPoint];
             this.segs.push(firstSeg);
 
             // and finally, our canvas
@@ -411,10 +410,10 @@
         Timeline.prototype =
         {
             interp: function(pointFrom, pointTo, value) {
-                var vector = [pointTo[0] - pointFrom[0], pointTo[1] - pointFrom[1]];
-                var x = pointFrom[0] + value * vector[0];
-                var y = pointFrom[1] + value * vector[1];
-                var result = [x, y, value];
+                const vector = [pointTo[0] - pointFrom[0], pointTo[1] - pointFrom[1]];
+                const x = pointFrom[0] + value * vector[0];
+                const y = pointFrom[1] + value * vector[1];
+                const result = [x, y, value];
                 return result;
             },
 
@@ -425,36 +424,36 @@
 
             // pick a new point at [value] along the line, with Y wiggle
             pickPoint: function(value) {
-                var point = this.valueToPoint(value); // choose a point along the baseline
+                let point = this.valueToPoint(value); // choose a point along the baseline
                 point[1] -= Math.random()*this.range; // add a random Y offset
                 return point;
             },
 
             // commence a new segment of the line
             newSeg: function() {
-                var lastSeg = this.segs.length - 1;
-                var joint = this.segs[lastSeg][1]; // make end of last seg start of new one
-                var newValue = this.segs[lastSeg][1][2] + this.segInterval;
-                var segEnd = this.pickPoint(newValue);
+                const lastSeg = this.segs.length - 1;
+                const joint = this.segs[lastSeg][1]; // make end of last seg start of new one
+                const newValue = this.segs[lastSeg][1][2] + this.segInterval;
+                const segEnd = this.pickPoint(newValue);
                 this.segs.push([joint, segEnd]);
             },
 
             // commence a new segment, broken off from the previous one
             newBranch: function() {
                 this.newSeg();
-                var lastSeg = this.segs.length-1;
+                const lastSeg = this.segs.length-1;
                 this.segs[lastSeg][0] = this.pickPoint(this.segs[lastSeg][0][2]);
             },
 
             draw: function(value) {
-                var lastSeg = this.segs.length - 1;
+                let lastSeg = this.segs.length - 1;
                 // add new segments to reach value
                 while (value > this.segs[lastSeg][1][2]) {
                     this.newSeg();
                     lastSeg ++;
                 }
                 // get first segment that needs redrawn
-                for (var i = lastSeg - 1; i >= 0 && this.lastValue < this.segs[i][1][2]; i--)
+                for (let i = lastSeg - 1; i >= 0 && this.lastValue < this.segs[i][1][2]; i--)
                     ;
                 i = i < 0 ? 0 : i;
                 // clear canvas from segs[lastSeg][0][0] to segs[lastSeg][1][0]
@@ -468,8 +467,8 @@
                 // remove spare segments
                 while (i < this.segs.length - 1) this.segs.pop();
                 // draw current segment
-                var relativeValue = (value-this.segs[i][0][2]) / (this.segs[i][1][2] - this.segs[i][0][2]);
-                var endPoint = this.interp(this.segs[i][0], this.segs[i][1], relativeValue);
+                const relativeValue = (value-this.segs[i][0][2]) / (this.segs[i][1][2] - this.segs[i][0][2]);
+                const endPoint = this.interp(this.segs[i][0], this.segs[i][1], relativeValue);
                 this.canvas.moveTo(this.segs[i][0][0], this.segs[i][0][1]);
                 this.canvas.lineTo(endPoint[0], endPoint[1]);
                 this.canvas.stroke();
@@ -484,9 +483,9 @@
 		}
 
 		function getFileName(affix) {
-			var dir = "audio/"; // directory/URI
-			var prefix = "cue-"; // prefix if cue (ie. if passed a number)
-			var postfix = ".mp3"; // format
+			const dir = "audio/"; // directory/URI
+			const prefix = "cue-"; // prefix if cue (ie. if passed a number)
+			const postfix = ".mp3"; // format
 			if (typeof affix === 'number') { // if passed a number, it's a cue
 				if (affix < 10) affix = '0' + affix; // 0-padding
 				return dir + prefix + affix + postfix;
@@ -497,8 +496,8 @@
 
 		// based on Knuth Shuffle (https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array)
 		function shuffleArray(arr) {
-			var currentIndex = arr.length;
-			var randomIndex, temp;
+			let currentIndex = arr.length;
+			let randomIndex, temp;
 
 			// While there remain elements to shuffle...
 			while (currentIndex !== 0) {
