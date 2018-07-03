@@ -189,22 +189,21 @@
 			// initialise main narration audio
 			this.narration = new Audio(getFileName(dynamicNarration));
 			this.narration.preload = "auto";
-            this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
-			this.narration.addEventListener('timeupdate',  () => { this.seek(); });
-			this.narration.addEventListener('ended',  () => { this.ended(); });
-			this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
-			this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
-            this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
-			this.narration.addEventListener('timeupdate',  () => { this.seek(); });
-			this.narration.addEventListener('ended',  () => { this.ended(); });
-			this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
-			this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
+            this.narration.addEventListener('canplaythrough', () => { this.loaded();         });
+			this.narration.addEventListener('timeupdate',     () => { this.seek();           });
+			this.narration.addEventListener('ended',          () => { this.ended();          });
+			this.narration.addEventListener('waiting',        () => { this.audioWaiting();   });
+			this.narration.addEventListener('playing',        () => { this.audioUnwaiting(); });
+            this.narration.addEventListener('canplaythrough', () => { this.loaded();         });
+			this.narration.addEventListener('timeupdate',     () => { this.seek();           });
+			this.narration.addEventListener('ended',          () => { this.ended();          });
+			this.narration.addEventListener('waiting',        () => { this.audioWaiting();   });
+			this.narration.addEventListener('playing',        () => { this.audioUnwaiting(); });
 
             // initialise cues
             this.cues = [];
             this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
             const listlen = playlist.length;
-            console.log("listlen = " + listlen);
             for (let i = 0; i < listlen; i++) {
                 const newCue = new Cue(playlist[i]);
                 this.cues.push(newCue);
@@ -413,8 +412,7 @@
                 const vector = [pointTo[0] - pointFrom[0], pointTo[1] - pointFrom[1]];
                 const x = pointFrom[0] + value * vector[0];
                 const y = pointFrom[1] + value * vector[1];
-                const result = [x, y, value];
-                return result;
+                return [x, y, value];
             },
 
             // interpolate for whole timeline
@@ -453,8 +451,8 @@
                     lastSeg ++;
                 }
                 // get first segment that needs redrawn
-                for (let i = lastSeg - 1; i >= 0 && this.lastValue < this.segs[i][1][2]; i--)
-                    ;
+                let i = lastSeg - 1;
+                for (; i >= 0 && this.lastValue < this.segs[i][1][2]; i--);
                 i = i < 0 ? 0 : i;
                 // clear canvas from segs[lastSeg][0][0] to segs[lastSeg][1][0]
                 this.canvas.clearRect(this.segs[i][0][0], 0, this.dim[0], this.dim[1]);
