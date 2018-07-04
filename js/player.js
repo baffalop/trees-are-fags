@@ -2,7 +2,8 @@ const undynamicFullNarration = 'main-narration'
 const dynamicNarration = 'trees-are-fags-v2'
 
 // object manages pool of shuffled cues (as filenames only)
-function Cues(total) {
+function Cues(total)
+{
     console.log("Cues created");
 
     this.fileList = [];
@@ -24,7 +25,8 @@ function Cues(total) {
     };
 }
 
-function Cue(start) {
+function Cue(start)
+{
     this.start = start; // start time in main narration timeline
     this.active = false;
     this.hasLoaded = false;
@@ -40,7 +42,8 @@ function Cue(start) {
 
 Cue.prototype =
 {
-    loaded: function() {
+    loaded: function()
+    {
         console.log('Cue loaded');
         this.hasLoaded = true;
         if (player.waitLoad) {
@@ -48,7 +51,8 @@ Cue.prototype =
         }
     },
 
-    preload: function() {
+    preload: function()
+    {
         this.audio.play();
         this.audio.pause();
         // calculate end time in main timeline
@@ -56,7 +60,8 @@ Cue.prototype =
         console.log("Cue start: " + this.start + " Cue end: " + this.end);
     },
 
-    play: function() {
+    play: function()
+    {
         if (!this.hasLoaded) {
             player.audioWaiting();
         } else if (this.audio) {
@@ -64,11 +69,13 @@ Cue.prototype =
         }
     },
 
-    pause: function() {
+    pause: function()
+    {
         this.audio.pause();
     },
 
-    go: function() {
+    go: function()
+    {
         this.active = true;
         this.play();
         const myCueNumber = player.curCue();
@@ -76,14 +83,16 @@ Cue.prototype =
     },
 
     // played through (onEnded)
-    ended: function() {
+    ended: function()
+    {
         console.log('Cue ended');
         this.audio.pause();
         this.active = false;
         player.nextCue();
     },
 
-    deactivate: function() {
+    deactivate: function()
+    {
         console.log('Cue deactivated');
         if (this.active) {
             this.active = false;
@@ -95,8 +104,8 @@ Cue.prototype =
 };
 
 // main Player object
-function Player(startTime, playlist, skipTime) {
-
+function Player(startTime, playlist, skipTime)
+{
     this.skipTime = skipTime;
     this.playing = false;
     this.preloaded = false;
@@ -134,7 +143,8 @@ function Player(startTime, playlist, skipTime) {
 Player.prototype =
 {
     // get currently queued cue (or null)
-    curCue: function() {
+    curCue: function()
+    {
         if (this.currentCueNumber >= this.cues.length) {
             return null;
         }
@@ -142,7 +152,8 @@ Player.prototype =
     },
 
     // get currently active cue (or null)
-    activeCue: function() {
+    activeCue: function()
+    {
         const cue = this.curCue();
         if (cue && cue.active) {
             return cue;
@@ -151,7 +162,8 @@ Player.prototype =
         }
     },
 
-    play: function() {
+    play: function()
+    {
         this.playing = true;
         if (!this.waitForCue) this.narration.play();
         const cue = this.activeCue();
@@ -159,7 +171,8 @@ Player.prototype =
         playButton.addClass('pause');
     },
 
-    pause: function() {
+    pause: function()
+    {
         this.playing = false;
         if (!this.waitForCue) this.narration.pause();
         const cue = this.activeCue();
@@ -168,7 +181,8 @@ Player.prototype =
     },
 
     // method called directly by pressing the play/pause button
-    playPause: function() {
+    playPause: function()
+    {
         if (!this.waitLoad) {
             if (this.playing) {
                 this.pause();
@@ -179,7 +193,8 @@ Player.prototype =
     },
 
     // skip forwards/backwards [amount] secs
-    skip: function(amount) {
+    skip: function(amount)
+    {
         let newNarrationTime = this.narration.currentTime + amount;
         // skip in current active cue
         let cue = this.curCue();
@@ -199,6 +214,7 @@ Player.prototype =
                 cue.audio.currentTime = newNarrationTime - cue.start;
             }
         }
+
         // are we skipping back into a previous cue?
         if (this.currentCueNumber > 0 && newNarrationTime < this.cues[this.currentCueNumber-1].end) {
             this.currentCueNumber--;
@@ -206,6 +222,7 @@ Player.prototype =
             cue.go();
             cue.audio.currentTime = newNarrationTime - cue.start;
         }
+
         // skip in narration
         if (newNarrationTime > this.narration.duration) {
             this.ended();
@@ -217,21 +234,24 @@ Player.prototype =
         console.log("Skipped to: " + this.narration.currentTime);
     },
 
-    rew: function() {
+    rew: function()
+    {
         if (!this.waitLoad) {
-            console.log('REwinding');
+            console.log('REWinding');
             this.skip(-this.skipTime);
         }
     },
 
-    ffw: function() {
+    ffw: function()
+    {
         if (!this.waitLoad) {
             console.log('FFWing');
             this.skip(this.skipTime);
         }
     },
 
-    seek: function() {
+    seek: function()
+    {
         const cue = this.curCue();
         if (cue && !cue.active && this.narration.currentTime >= cue.start) { // test we haven't run out of cues yet
             cue.go();
@@ -239,7 +259,8 @@ Player.prototype =
         timeline.draw(this.narration.currentTime / this.narration.duration);
     },
 
-    nextCue: function() {
+    nextCue: function()
+    {
         this.currentCueNumber++;
         const cue = this.curCue();
         if (cue) {
@@ -248,7 +269,8 @@ Player.prototype =
     },
 
     // finished playing through
-    ended: function() {
+    ended: function()
+    {
         this.pause();
         const cue = this.activeCue();
         if (cue) cue.deactivate();
@@ -260,7 +282,8 @@ Player.prototype =
 
     // play and pause each audio asset to trigger preloading on iOS
     // (needs to be in an on-click event)
-    preload: function() {
+    preload: function()
+    {
         if (!this.preloaded) {
             this.preloaded = true;
             this.narration.currentTime = this.startTime;
@@ -274,7 +297,8 @@ Player.prototype =
     },
 
     // for canplaythrough event
-    loaded: function() {
+    loaded: function()
+    {
         console.log('loaded');
         if (this.waitLoad) {
             this.audioUnwaiting();
@@ -282,7 +306,8 @@ Player.prototype =
     },
 
     // if any element that needs to play now hasn't loaded (or onWaiting events)
-    audioWaiting: function() {
+    audioWaiting: function()
+    {
         if (!this.waitLoad) {
             this.waitLoad = true;
             playButton.addClass('loading');
@@ -290,7 +315,8 @@ Player.prototype =
     },
 
     // onPlaying - once an element that needs to play now has loaded
-    audioUnwaiting: function() {
+    audioUnwaiting: function()
+    {
         if (this.waitLoad) {
             this.waitLoad = false;
             playButton.removeClass('loading');
@@ -298,7 +324,8 @@ Player.prototype =
     },
 };
 
-function getFileName(affix) {
+function getFileName(affix)
+{
     const dir = "audio/"; // directory/URI
     const prefix = "cue-"; // prefix if cue (ie. if passed a number)
     const postfix = ".mp3"; // format
@@ -311,7 +338,8 @@ function getFileName(affix) {
 }
 
 // based on Knuth Shuffle (https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array)
-function shuffleArray(arr) {
+function shuffleArray(arr)
+{
     let currentIndex = arr.length;
     let randomIndex, temp;
 

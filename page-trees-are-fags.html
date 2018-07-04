@@ -18,7 +18,8 @@
 
 		$(document).ready(init);
 
-		function init() {
+		function init()
+        {
 		    // setup jQuery refs
 			playButton = $('#playpause');
 
@@ -81,12 +82,14 @@
 		}
 
 		// for 'continue' button - swipe to next page and preload
-		function nextAndLoad() {
+		function nextAndLoad()
+        {
 			player.preload(); // trigger preloading on iOS
 			swipe.next();
 		}
 
-		function consoleLog(text) {
+		function consoleLog(text)
+        {
 			$('#console').append('<p>' + text + '</p>');
 			console.log(text);
 		}
