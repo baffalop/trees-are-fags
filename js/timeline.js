@@ -27,7 +27,7 @@ function Timeline(settings)
 
 Timeline.prototype =
 {
-    interp: function(pointFrom, pointTo, value)
+    interp: function interp(pointFrom, pointTo, value)
     {
         const vector = [pointTo[0] - pointFrom[0], pointTo[1] - pointFrom[1]];
         const x = pointFrom[0] + value * vector[0];
@@ -36,13 +36,13 @@ Timeline.prototype =
     },
 
     // interpolate for whole timeline
-    valueToPoint: function(value)
+    valueToPoint: function valueToPoint(value)
     {
         return this.interp(this.start, this.end, value);
     },
 
     // pick a new point at [value] along the line, with Y wiggle
-    pickPoint: function(value)
+    pickPoint: function pickPoint(value)
     {
         let point = this.valueToPoint(value); // choose a point along the baseline
         point[1] -= Math.random()*this.range; // add a random Y offset
@@ -50,7 +50,7 @@ Timeline.prototype =
     },
 
     // commence a new segment of the line
-    newSeg: function()
+    newSeg: function newSeg()
     {
         const lastSeg = this.segs.length - 1;
         const joint = this.segs[lastSeg][1]; // make end of last seg start of new one
@@ -60,14 +60,14 @@ Timeline.prototype =
     },
 
     // commence a new segment, broken off from the previous one
-    newBranch: function()
+    newBranch: function newBranch()
     {
         this.newSeg();
         const lastSeg = this.segs.length-1;
         this.segs[lastSeg][0] = this.pickPoint(this.segs[lastSeg][0][2]);
     },
 
-    draw: function(value)
+    draw: function draw(value)
     {
         let lastSeg = this.segs.length - 1;
         // add new segments to reach value
