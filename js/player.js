@@ -25,23 +25,44 @@ function Cues(total)
     };
 }
 
-function Cue(start)
+function Cue(start, end)
 {
     this.start = start; // start time in main narration timeline
+    this.waitTime = end;
     this.active = false;
     this.hasLoaded = false;
+    this.virtualEndTime = 0;
 
     const file = cues.getNextCue();
     console.log("Creating Cue on file = " + file);
     this.audio = new Audio(file);
     this.audio.preload = 'auto';
 
-    this.audio.addEventListener('ended', () => { this.ended(); });
     this.audio.addEventListener('canplaythrough', () => { this.loaded(); });
+    this.audio.addEventListener('ended', () => { this.ended(); });
 }
 
 Cue.prototype =
 {
+    getOverlap: function getInterval()
+    {
+        return this.waitTime - this.start;
+    },
+
+    getWaitInterval: function getWaitInterval()
+    {
+        return this.audio.duration - this.getOverlap();
+    },
+
+    getElapsedWait: function getElapsedWait()
+    {
+        const doneTime = this.start + this.audio.currentTime;
+        if (doneTime > this.waitTime) {
+            return doneTime - this.waitTime;
+        }
+        return 0;
+    },
+
     loaded: function loaded()
     {
         console.log('Cue loaded');
@@ -55,9 +76,9 @@ Cue.prototype =
     {
         this.audio.play();
         this.audio.pause();
-        // calculate end time in main timeline
-        this.end = this.start + this.audio.duration;
-        console.log("Cue start: " + this.start + " Cue end: " + this.end);
+        // calculate virtualEndTime time in main timeline
+        this.virtualEndTime = this.start + this.audio.duration;
+        console.log("Cue start: " + this.start + " Cue virtualEndTime: " + this.virtualEndTime);
     },
 
     play: function play()
@@ -88,6 +109,7 @@ Cue.prototype =
         console.log('Cue ended');
         this.audio.pause();
         this.active = false;
+        player.resume();
         player.nextCue();
     },
 
@@ -133,15 +155,20 @@ function Player(startTime, playlist, skipTime)
     this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
     const listlen = playlist.length;
     for (let i = 0; i < listlen; i++) {
-        const newCue = new Cue(playlist[i]);
-        this.cues.push(newCue);
-        console.table(this.cues[i]);
+        const newCue = new Cue(playlist[i][0], playlist[i][1]);
+        this.addCue(newCue);
     }
     this.nextCue();
 }
 
 Player.prototype =
 {
+    addCue: function addCue(cue)
+    {
+        this.cues.push(cue);
+        const lastCue = this.cues.length - 1;
+    },
+
     // get currently queued cue (or null)
     curCue: function curCue()
     {
@@ -192,48 +219,6 @@ Player.prototype =
         }
     },
 
-    // skip forwards/backwards [amount] secs
-    skip: function skip(amount)
-    {
-        let newNarrationTime = this.narration.currentTime + amount;
-        // skip in current active cue
-        let cue = this.curCue();
-        if (cue) {
-            if (cue.active) {
-                // are we stepping out of the time bounds of currently playing cue?
-                if (newNarrationTime < cue.start) {
-                    cue.deactivate();
-                } else if (newNarrationTime > cue.end) {
-                    cue.ended();
-                } else {
-                    cue.audio.currentTime = newNarrationTime - cue.start;
-                }
-            } else if (newNarrationTime > cue.start) {
-                // should a cue be triggered now?
-                cue.go();
-                cue.audio.currentTime = newNarrationTime - cue.start;
-            }
-        }
-
-        // are we skipping back into a previous cue?
-        if (this.currentCueNumber > 0 && newNarrationTime < this.cues[this.currentCueNumber-1].end) {
-            this.currentCueNumber--;
-            cue = this.curCue();
-            cue.go();
-            cue.audio.currentTime = newNarrationTime - cue.start;
-        }
-
-        // skip in narration
-        if (newNarrationTime > this.narration.duration) {
-            this.ended();
-        } else if (newNarrationTime < 0) {
-            this.narration.currentTime = 0;
-        } else {
-            this.narration.currentTime = newNarrationTime;
-        }
-        console.log("Skipped to: " + this.narration.currentTime);
-    },
-
     rew: function rew()
     {
         if (!this.waitLoad) {
@@ -250,11 +235,71 @@ Player.prototype =
         }
     },
 
+    skip: function skip(amount)
+    {
+        const virtualTime = this.getVirtualTime();
+        this.setVirtualTime(virtualTime + amount)
+    },
+
+    getVirtualTime: function getVirtualTime()
+    {
+        let virtualTime = this.narration.currentTime;
+
+        // add wait intervals of all previous cues
+        for (let i = 0; i < this.currentCueNumber; i++) {
+            const cue = this.cues[i];
+            if (cue.getWaitInterval() > 0) {
+                virtualTime += cue.getWaitInterval();
+            }
+        }
+
+        // check if we're waiting on current cue
+        if (this.waitForCue) {
+            virtualTime += this.activeCue().getElapsedWait();
+        }
+
+        return virtualTime;
+    },
+
+    setVirtualTime: function setVirtualTime(virtualTime)
+    {
+        let cue = this.curCue();
+        cue.deactivate();
+        this.currentCueNumber = -1;
+        this.resume();
+
+        let realTime = virtualTime;
+        let cue;
+        while (cue = this.nextCue()) {
+            if (cue.start > realTime) {
+                break;
+            }
+
+            if (cue.virtualEndTime > realTime) {
+                cue.go();
+                cue.audio.currentTime = realTime - cue.start;
+                if (cue.getElapsedWait() > 0) {
+                    realTime = cue.waitTime;
+                    this.wait();
+                }
+                break;
+            }
+
+            realTime -= cue.getWaitInterval();
+        }
+
+        this.narration.currentTime = realTime;
+    },
+
     seek: function seek()
     {
         const cue = this.curCue();
-        if (cue && !cue.active && this.narration.currentTime >= cue.start) { // test we haven't run out of cues yet
-            cue.go();
+        if (cue) {
+            if (!cue.active && this.narration.currentTime >= cue.start) {
+                cue.go();
+            } else if (cue.active && this.narration.currentTime >= cue.waitTime) {
+                this.wait();
+            }
         }
         timeline.draw(this.narration.currentTime / this.narration.duration);
     },
@@ -262,9 +307,20 @@ Player.prototype =
     nextCue: function nextCue()
     {
         this.currentCueNumber++;
-        const cue = this.curCue();
-        if (cue) {
-            // cue.setup();
+        return this.curCue();
+    },
+
+    wait: function wait()
+    {
+        this.waitForCue = true;
+        this.narration.pause();
+    },
+
+    resume: function resume()
+    {
+        if (this.waitForCue) {
+            this.waitForCue = false;
+            this.narration.play();
         }
     },
 
@@ -321,13 +377,18 @@ Player.prototype =
             this.waitLoad = false;
             playButton.removeClass('loading');
         }
-    },
+    }
 };
+
+function Timeline(playlist)
+{
+    this.playlist = playlist;
+}
 
 function getFileName(affix)
 {
     const dir = "audio/"; // directory/URI
-    const prefix = "cue-"; // prefix if cue (ie. if passed a number)
+    const prefix = "cue-combined-"; // prefix if cue (ie. if passed a number)
     const postfix = ".mp3"; // format
     if (typeof affix === 'number') { // if passed a number, it's a cue
         if (affix < 10) affix = '0' + affix; // 0-padding
