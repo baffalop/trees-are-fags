@@ -76,7 +76,6 @@ Cue.prototype =
     {
         this.audio.play();
         this.audio.pause();
-        // calculate virtualEndTime time in main timeline
         this.virtualEndTime = this.start + this.audio.duration;
         console.log("Cue start: " + this.start + " Cue virtualEndTime: " + this.virtualEndTime);
     },
@@ -299,7 +298,7 @@ Player.prototype =
                 this.wait();
             }
         }
-        timeline.draw(this.narration.currentTime / this.narration.duration);
+        // timeline.draw(this.narration.currentTime / this.narration.duration);
     },
 
     nextCue: function nextCue()
