@@ -98,7 +98,7 @@ Cue.prototype =
     go: function go()
     {
         this.active = true;
-        this.play();
+        if (player.playing) this.play();
         const myCueNumber = player.curCue();
         console.log('Cue ' + myCueNumber + ' triggered');
     },
@@ -107,8 +107,8 @@ Cue.prototype =
     ended: function ended()
     {
         console.log('Cue ended');
-        this.audio.pause();
         this.active = false;
+        this.audio.currentTime = 0;
         player.resume();
         player.nextCue();
     },
@@ -263,12 +263,11 @@ Player.prototype =
     setVirtualTime: function setVirtualTime(virtualTime)
     {
         let cue = this.curCue();
-        cue.deactivate();
+        if (cue) cue.deactivate();
         this.currentCueNumber = -1;
         this.resume();
 
         let realTime = virtualTime;
-        let cue;
         while (cue = this.nextCue()) {
             if (cue.start > realTime) {
                 break;
@@ -319,7 +318,7 @@ Player.prototype =
     {
         if (this.waitForCue) {
             this.waitForCue = false;
-            this.narration.play();
+            if (this.playing) this.narration.play();
         }
     },
 
