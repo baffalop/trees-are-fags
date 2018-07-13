@@ -166,7 +166,6 @@ Player.prototype =
     addCue: function addCue(cue)
     {
         this.cues.push(cue);
-        const lastCue = this.cues.length - 1;
     },
 
     // get currently queued cue (or null)
@@ -379,11 +378,6 @@ Player.prototype =
         }
     }
 };
-
-function Timeline(playlist)
-{
-    this.playlist = playlist;
-}
 
 function getFileName(affix)
 {
