@@ -4,8 +4,6 @@ const dynamicNarration = 'trees-are-fags-v2'
 // object manages pool of shuffled cues (as filenames only)
 function Cues(total)
 {
-    console.log("Cues created");
-
     this.fileList = [];
     this.total = total;
     this.used = 0; // how many cues have been given away
@@ -34,7 +32,6 @@ function Cue(start, end)
     this.virtualEndTime = 0;
 
     const file = cues.getNextCue();
-    console.log("Creating Cue on file = " + file);
     this.audio = new Audio(file);
     this.audio.preload = 'auto';
 
@@ -65,7 +62,6 @@ Cue.prototype =
 
     loaded: function loaded()
     {
-        console.log('Cue loaded');
         this.hasLoaded = true;
         if (player.waitLoad) {
             player.audioUnwaiting();
@@ -77,7 +73,6 @@ Cue.prototype =
         this.audio.play();
         this.audio.pause();
         this.virtualEndTime = this.start + this.audio.duration;
-        console.log("Cue start: " + this.start + " Cue virtualEndTime: " + this.virtualEndTime);
     },
 
     play: function play()
@@ -99,13 +94,11 @@ Cue.prototype =
         this.active = true;
         if (player.playing) this.play();
         const myCueNumber = player.curCue();
-        console.log('Cue ' + myCueNumber + ' triggered');
     },
 
     // played through (onEnded)
     ended: function ended()
     {
-        console.log('Cue ended');
         this.active = false;
         this.audio.currentTime = 0;
         player.resume();
@@ -114,7 +107,6 @@ Cue.prototype =
 
     deactivate: function deactivate()
     {
-        console.log('Cue deactivated');
         if (this.active) {
             this.active = false;
             this.audio.pause();
@@ -220,7 +212,6 @@ Player.prototype =
     rew: function rew()
     {
         if (!this.waitLoad) {
-            console.log('REWinding');
             this.skip(-this.skipTime);
         }
     },
@@ -228,7 +219,6 @@ Player.prototype =
     ffw: function ffw()
     {
         if (!this.waitLoad) {
-            console.log('FFWing');
             this.skip(this.skipTime);
         }
     },
@@ -352,7 +342,6 @@ Player.prototype =
     // for canplaythrough event
     loaded: function loaded()
     {
-        console.log('loaded');
         if (this.waitLoad) {
             this.audioUnwaiting();
         }
