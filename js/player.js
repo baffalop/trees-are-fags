@@ -10,7 +10,7 @@ function Cues(total)
 
     // initialise filenames array
     for (let i = 0; i < this.total; ++i) {
-        this.fileList[i] = getFileName(i+1);
+        this.fileList[i] = getFileName(i);
     }
     // shuffle
     this.fileList = shuffleArray(this.fileList);
@@ -369,7 +369,7 @@ Player.prototype =
 function getFileName(affix)
 {
     const dir = "audio/"; // directory/URI
-    const prefix = "cue-combined-"; // prefix if cue (ie. if passed a number)
+    const prefix = "cue-"; // prefix if cue (ie. if passed a number)
     const postfix = ".mp3"; // format
     if (typeof affix === 'number') { // if passed a number, it's a cue
         if (affix < 10) affix = '0' + affix; // 0-padding
