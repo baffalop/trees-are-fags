@@ -43,21 +43,18 @@ Cue.prototype =
 {
     getOverlap: function getInterval()
     {
-        return this.waitTime - this.start;
+        return Math.max(0, this.waitTime - this.start);
     },
 
     getWaitInterval: function getWaitInterval()
     {
-        return this.audio.duration - this.getOverlap();
+        return Math.max(0, this.audio.duration - this.getOverlap());
     },
 
     getElapsedWait: function getElapsedWait()
     {
         const doneTime = this.start + this.audio.currentTime;
-        if (doneTime > this.waitTime) {
-            return doneTime - this.waitTime;
-        }
-        return 0;
+        return Math.max(0, doneTime - this.waitTime);
     },
 
     loaded: function loaded()
@@ -263,8 +260,8 @@ Player.prototype =
             }
 
             if (cue.virtualEndTime > realTime) {
-                cue.go();
                 cue.audio.currentTime = realTime - cue.start;
+                cue.go();
                 if (cue.getElapsedWait() > 0) {
                     realTime = cue.waitTime;
                     this.wait();
