@@ -29,7 +29,7 @@
             // DEFINE CUE POSITIONS HERE
             const playlist = [[261.26, 291.1], [356.18, 375.2], [430.94, 455.2], [529.53, 542], [645.6, 661.3], [746.13, 756], [888.74, 922.6]];
             const startTime = 240;
-            const skipTime = 5; // seconds to skip forward/back using buttons
+            const skipTime = 10; // seconds to skip forward/back using buttons
 
             player = new Player(startTime, playlist, skipTime);
             playButton.click( () => { player.playPause(); });
