@@ -1,0 +1,25 @@
+Files
+  audio/cue-01.mp3
+  audio/cue-02.mp3
+  audio/cue-03.mp3
+  audio/cue-04.mp3
+  audio/cue-05.mp3
+  audio/cue-06.mp3
+  audio/cue-07.mp3
+  audio/cue-08.mp3
+  audio/cue-09.mp3
+  audio/cue-10.mp3
+  audio/cue-11.mp3
+  audio/cue-12.mp3
+  audio/cue-13.mp3
+  audio/cue-14.mp3
+  audio/cue-15.mp3
+  audio/cue-16.mp3
+  audio/cue-17.mp3
+  audio/cue-18.mp3
+  audio/cue-19.mp3
+  audio/cue-20.mp3
+  audio/cue-21.mp3
+  audio/main-narration-updated.mp3
+  audio/main-narration.mp3
+  audio/main-narration-no-cues.mp3
