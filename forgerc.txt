@@ -1,2 +1,14 @@
 Files
-  audio/*.mp3
+  audio/cue-01.mp3
+  audio/cue-02.mp3
+  audio/cue-03.mp3
+  audio/cue-04.mp3
+  audio/cue-05.mp3
+  audio/cue-06.mp3
+  audio/cue-07.mp3
+  audio/cue-08.mp3
+  audio/cue-09.mp3
+  audio/cue-10.mp3
+  audio/main-narration-updated.mp3
+  audio/main-narration.mp3
+  audio/trees-are-fags-v2.mp3
