@@ -1,4 +1,5 @@
 Files
+  audio/cue-00.mp3
   audio/cue-01.mp3
   audio/cue-02.mp3
   audio/cue-03.mp3
