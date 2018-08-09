@@ -1,5 +1,5 @@
 const undynamicFullNarration = 'main-narration'
-const dynamicNarration = 'trees-are-fags-v2'
+const dynamicNarration = 'main-narration-no-cues'
 
 // object manages pool of shuffled cues (as filenames only)
 function Cues(total)
