@@ -272,7 +272,11 @@ Player.prototype =
             realTime -= cue.getWaitInterval();
         }
 
-        this.narration.currentTime = realTime;
+        console.log(`narration duration: ${this.narration.duration}`)
+
+        if (!isNaN(this.narration.duration)) {
+            this.narration.currentTime = realTime;
+        }
     },
 
     seek: function seek()
