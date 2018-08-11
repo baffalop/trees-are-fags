@@ -273,9 +273,7 @@ Player.prototype =
         }
 
         console.log(`Setting current time (${this.narration.currentTime}) to realtime ${realTime}`);
-        this.narration.pause();
-        this.narration.currentTime = realTime;
-        this.narration.play();
+        this.narration.currentTime += realTime - this.narration.currentTime;
     },
 
     seek: function seek()
