@@ -41,7 +41,7 @@ function Cue(start, end)
 
 Cue.prototype =
 {
-    getOverlap: function getInterval()
+    getOverlap: function getOverlap()
     {
         return Math.max(0, this.waitTime - this.start);
     },
