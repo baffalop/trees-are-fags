@@ -275,6 +275,7 @@ Player.prototype =
         console.log(`Setting current time (${this.narration.currentTime}) to realtime ${realTime}`);
         this.narration.pause();
         this.narration.currentTime = realTime;
+        console.log(`Before playing currentTime is ${this.narration.currentTime}`);
         this.narration.play();
     },
 
