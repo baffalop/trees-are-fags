@@ -65,7 +65,7 @@ Cue.prototype =
         }
     },
 
-    preload: function preload()
+    prepareLoad: function preload()
     {
         this.audio.play();
         this.audio.pause();
@@ -321,7 +321,7 @@ Player.prototype =
 
     // play and pause each audio asset to trigger preloading on iOS
     // (needs to be in an on-click event)
-    preload: function preload()
+    prepareLoad: function prepareLoad()
     {
         if (!this.preloaded) {
             this.preloaded = true;
@@ -330,7 +330,7 @@ Player.prototype =
             window.setTimeout( () => { this.narration.pause(); }, 5);
             const cueLen = this.cues.length;
             for (let i = 0; i < cueLen; i++) {
-                this.cues[i].preload();
+                this.cues[i].prepareLoad();
             }
         }
     },

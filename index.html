@@ -72,7 +72,7 @@
 				if (keycode === Key.LEFT) {
 					swipe.prev();
 				} else if (keycode === Key.RIGHT) {
-				    if (swipe.getPos() === 0) player.preload();
+				    if (swipe.getPos() === 0) player.prepareLoad();
 					swipe.next();
 				}
 			});
@@ -86,7 +86,7 @@
 		// for 'continue' button - swipe to next page and preload
 		function nextAndLoad()
         {
-			player.preload(); // trigger preloading on iOS
+			player.prepareLoad(); // trigger preloading on iOS
 			swipe.next();
 		}
 
