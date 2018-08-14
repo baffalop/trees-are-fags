@@ -131,7 +131,7 @@ function Player(startTime, playlist, skipTime)
     this.narration.addEventListener('timeupdate',     () => { this.seek();           });
     this.narration.addEventListener('ended',          () => { this.ended();          });
     this.narration.addEventListener('waiting',        () => { this.audioWaiting();   });
-    this.narration.addEventListener('playing',        () => { this.audioUnwaiting(); });
+    this.narration.addEventListener('playing',        () => { this.loaded(); });
 
     // initialise cues
     this.cues = [];
@@ -339,7 +339,8 @@ Player.prototype =
     loaded: function loaded()
     {
         if (this.waitLoad) {
-            this.audioUnwaiting();
+            this.waitLoad = false;
+            playButton.removeClass('loading');
         }
     },
 
@@ -351,15 +352,6 @@ Player.prototype =
             playButton.addClass('loading');
         }
     },
-
-    // onPlaying - once an element that needs to play now has loaded
-    audioUnwaiting: function audioUnwaiting()
-    {
-        if (this.waitLoad) {
-            this.waitLoad = false;
-            playButton.removeClass('loading');
-        }
-    }
 };
 
 function getFileName(affix)
