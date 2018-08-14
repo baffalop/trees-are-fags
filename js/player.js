@@ -132,11 +132,6 @@ function Player(startTime, playlist, skipTime)
     this.narration.addEventListener('ended',          () => { this.ended();          });
     this.narration.addEventListener('waiting',        () => { this.audioWaiting();   });
     this.narration.addEventListener('playing',        () => { this.audioUnwaiting(); });
-    this.narration.addEventListener('canplaythrough', () => { this.loaded();         });
-    this.narration.addEventListener('timeupdate',     () => { this.seek();           });
-    this.narration.addEventListener('ended',          () => { this.ended();          });
-    this.narration.addEventListener('waiting',        () => { this.audioWaiting();   });
-    this.narration.addEventListener('playing',        () => { this.audioUnwaiting(); });
 
     // initialise cues
     this.cues = [];
