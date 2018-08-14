@@ -90,7 +90,6 @@ Cue.prototype =
     {
         this.active = true;
         if (player.playing) this.play();
-        const myCueNumber = player.curCue();
     },
 
     // played through (onEnded)
@@ -267,7 +266,7 @@ Player.prototype =
             realTime -= cue.getWaitInterval();
         }
 
-        console.log(`Setting current time (${this.narration.currentTime}) to realtime ${realTime}`);
+        console.log(`Setting current time (${this.narration.currentTime}) to realTime ${realTime}`);
         this.narration.currentTime = realTime;
         console.log(`currentTime result is ${this.narration.currentTime}`);
     },
