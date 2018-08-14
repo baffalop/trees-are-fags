@@ -61,11 +61,11 @@ Cue.prototype =
     {
         this.hasLoaded = true;
         if (player.waitLoad) {
-            player.audioUnwaiting();
+            player.loaded();
         }
     },
 
-    prepareLoad: function preload()
+    prepareLoad: function prepareLoad()
     {
         this.audio.play();
         this.audio.pause();
