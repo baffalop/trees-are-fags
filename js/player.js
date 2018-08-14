@@ -300,8 +300,10 @@ Player.prototype =
 
     wait: function wait()
     {
-        this.waitForCue = true;
-        this.narration.pause();
+        if (!this.waitForCue) {
+            this.waitForCue = true;
+            this.narration.pause();
+        }
     },
 
     resume: function resume()
