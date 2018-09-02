@@ -120,17 +120,16 @@ function Player(startTime, playlist, skipTime)
     this.preloaded = false;
     this.waitForCue = false;
     this.waitLoad = false;
-    this.skipTime = skipTime;
     this.startTime = startTime;
 
     // initialise main narration audio
     this.narration = new Audio(getFileName(dynamicNarration));
     this.narration.preload = "auto";
-    this.narration.addEventListener('canplaythrough', () => { this.loaded();         });
-    this.narration.addEventListener('timeupdate',     () => { this.seek();           });
-    this.narration.addEventListener('ended',          () => { this.ended();          });
-    this.narration.addEventListener('waiting',        () => { this.audioWaiting();   });
-    this.narration.addEventListener('playing',        () => { this.loaded(); });
+    this.narration.addEventListener('canplaythrough', () => { this.loaded();       });
+    this.narration.addEventListener('timeupdate',     () => { this.seek();         });
+    this.narration.addEventListener('ended',          () => { this.ended();        });
+    this.narration.addEventListener('waiting',        () => { this.audioWaiting(); });
+    this.narration.addEventListener('playing',        () => { this.loaded();       });
 
     // initialise cues
     this.cues = [];
