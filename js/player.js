@@ -222,6 +222,9 @@ Player.prototype =
 
     getVirtualTime: function getVirtualTime()
     {
+        console.log(`currentTime is ${this.narration.currentTime}`)
+        console.table(this.narration.buffered)
+
         let virtualTime = this.narration.currentTime;
 
         // add wait intervals of all previous cues
