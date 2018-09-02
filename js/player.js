@@ -223,7 +223,8 @@ Player.prototype =
     getVirtualTime: function getVirtualTime()
     {
         console.log(`currentTime is ${this.narration.currentTime}`)
-        console.table(this.narration.buffered)
+        const buff = this.narration.buffered
+        console.log(`buffered ${buff.start(0)} to ${buff.end(0)}`)
 
         let virtualTime = this.narration.currentTime;
 
