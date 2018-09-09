@@ -130,6 +130,7 @@ function Player(startTime, playlist, skipTime)
     this.narration.addEventListener('ended',          () => { this.ended();        });
     this.narration.addEventListener('waiting',        () => { this.audioWaiting(); });
     this.narration.addEventListener('playing',        () => { this.loaded();       });
+    this.narration.addEventListener('loadedmetadata', () => { console.log('loaded metadata') })
 
     // initialise cues
     this.cues = [];
