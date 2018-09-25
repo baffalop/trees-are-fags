@@ -1,0 +1,156 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <link href="https://fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet" />
+    <link href="../treestyle.css" rel="stylesheet" />
+	<script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="../js/swipe.min.js"></script>
+    <script type="text/javascript" src="player.js"></script>
+    <script type="text/javascript" src="../js/timeline.js"></script>
+	<script type="text/javascript">
+
+		let playButton;
+		let swipe;
+
+		let cues;
+		let player;
+		let timeline;
+
+		$(document).ready(init);
+
+		function init()
+        {
+		    // setup jQuery refs
+			playButton = $('#playpause');
+
+            // setup player
+            const cuePoolTotal = 22; // total number of phrases in the pool
+            cues = new Cues(cuePoolTotal);
+            // DEFINE CUE POSITIONS HERE
+            const playlist = [
+                [263.8, 291.1], [359.4, 377.3], [432.0, 458.7], [533.9, 534.5], [639.3, 640], [717.5, 718], [845.9, 885.4]
+            ];
+            const startTime = 0;
+            const skipTime = 10; // seconds to skip forward/back using buttons
+
+            player = new Player(startTime, playlist, skipTime);
+            playButton.click( () => { player.playPause(); });
+            $('#rew').click( () => { player.rew(); });
+            $('#ffw').click( () => { player.ffw(); });
+
+            // initialise timeline
+            const tlSettings = {
+                dimensions  : [601, 250],
+                pad         : 10,
+                offsetY     : 100,
+                segInterval : 0.01,
+                lineWeight  : 3
+            };
+            // timeline = new Timeline(tlSettings);
+
+            // setup swipe
+			swipe = new Swipe($('#slider')[0], {
+				speed: 700, // of transition (ms)
+				continuous: false, // ie. don't cycle back round
+				disableScroll: true,
+                draggable: true, // swipe on desktop
+			});
+			swipe.setup();
+
+            // setup left and right keys (for closure)
+            const Key = {
+                LEFT: 37,
+                RIGHT: 39
+            };
+
+            // arrow keys to move between swipe pages
+			window.addEventListener('keydown', function(e) {
+				if (!e) e = window.event;
+				// setup keys
+				const keycode = e.keyCode || e.which;
+				// test keys
+				if (keycode === Key.LEFT) {
+					swipe.prev();
+				} else if (keycode === Key.RIGHT) {
+				    if (swipe.getPos() === 0) player.prepareLoad();
+					swipe.next();
+				}
+			});
+
+			// report seek time
+            window.setInterval( () => {
+                console.log("Play position: " + player.narration.currentTime);
+            }, 10000);
+		}
+
+		// for 'continue' button - swipe to next page and preload
+		function nextAndLoad()
+        {
+			player.prepareLoad(); // trigger preloading on iOS
+			swipe.next();
+		}
+
+		function consoleLog(text)
+        {
+			$('#console').append('<p>' + text + '</p>');
+			console.log(text);
+		}
+
+	</script>
+</head>
+
+<body>
+<!-- <div id="console"></div> -->
+<img src="../imgs/title-large.png" class="title" alt="Trees Are Fags" />
+<div class="timeline"><canvas id="timeline" width="600" height="250"></canvas></div>
+
+<div id="slider" class="swipe">
+    <div class="swipe-wrap">
+
+        <!-- ................page 1...........-->
+        <div class="page">
+            <div class="text-body">
+                <p>
+
+                    This is a guided encounter with a tree, so it is best that you listen in the company of trees. You
+                    will be led through a series of observations, reflections and movements in relation to trees. The
+                    encounter lasts just over 20 minutes. So find a spot among trees, turn off the ringer of your
+                    device, and when you are ready, swipe to the next screen to begin <em>Trees Are Fags</em>
+
+                </p>
+                <p align="right">
+                    <a onclick="nextAndLoad()" href="#">Click here to continue &gt;</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- ................page 2...........-->
+        <div class="page">
+            <div class="controls">
+                <div class="controlButton" id="rew"></div>
+                <div class="controlButton play loading" id="playpause"></div>
+                <div class="controlButton" id="ffw"></div>
+            </div>
+        </div>
+
+        <!-- ................page 3...........-->
+        <div class="page">
+            <div class="text-body">
+                <p>
+
+                    <em>Trees are Fags</em> is an encounter created in 2018 by Benny Nemerofsky Ramsay, programmed and
+                    sound designed by Nikita Gaidakov. The piece features the voices of Matt Carter, Oskar Kirk Hansen,
+                    Bastien Pourtout, Edward Twaddle, Alberta Whittle and Virginia Woolf. Fragments from Sofia
+                    Gubaidulina's <em>Sonata for Two Bassoons</em> (1977) was performed by Ronan Whittern. <em>Trees are
+                    Fags</em> was commissioned by Lux and co-produced by the <em>Cruising the Seventies</em> research
+                    team at the Edinburgh College of Art. For more information on Benny Nemerofsky Ramsay, visit <a
+                    href="http://www.nemerofsky.ca">www.nemerofsky.ca</a>.
+
+                </p>
+                <p align="center"><img src="../imgs/logos.png" width="150" /></p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
