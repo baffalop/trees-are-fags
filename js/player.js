@@ -359,16 +359,33 @@ Player.prototype =
 
 function getFileName(affix)
 {
-    const dir = "audio/"; // directory/URI
+    const cdn = "https://cdn.getforge.com/trees-are-fags.eu/" + getCdnCode();
+    const dir = "/audio/"; // directory/URI
     const prefix = "cue-"; // prefix if cue (ie. if passed a number)
     const postfix = ".mp3"; // format
     if (typeof affix === 'number') { // if passed a number, it's a cue
         if (affix < 10) affix = '0' + affix; // 0-padding
-        return dir + prefix + affix + postfix;
+        return cdn + dir + prefix + affix + postfix;
     } else { // if passed text, that's the name of the main narration file
-        return dir + affix + postfix;
+        return cdn + dir + affix + postfix;
     }
 }
+
+const getCdnCode = (() => {
+    let cdnCode = '';
+
+    return () => {
+        if (cdnCode !== '') {
+          return cdnCode;
+        }
+
+        const metaTag = $('meta[name=forge-tag]');
+        const val = metaTag.val();
+        cdnCode = val.split(':')[1];
+
+        return cdnCode;
+    }
+})();
 
 // based on Knuth Shuffle (https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array)
 function shuffleArray(arr)
