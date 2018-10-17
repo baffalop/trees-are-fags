@@ -379,10 +379,7 @@ const getCdnCode = (() => {
           return cdnCode;
         }
 
-        const metaTag = $('meta[name=forge-tag]');
-        const val = metaTag.val();
-        cdnCode = val.split(':')[1];
-
+        cdnCode = $('meta[name=forge-tag]').attr('value').split(':')[1];
         return cdnCode;
     }
 })();
