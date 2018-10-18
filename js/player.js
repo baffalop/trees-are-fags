@@ -344,12 +344,18 @@ Player.prototype =
         }
 
         this.preloaded = true;
-        this.narration.currentTime = this.startTime;
+
+        this.narration.muted = true;
         this.narration.play();
-        window.setTimeout( () => { this.narration.pause(); }, 5);
-        const cueLen = this.cues.length;
-        for (let i = 0; i < cueLen; i++) {
-          this.cues[i].prepareLoad();
+
+        window.setTimeout( () => {
+          this.narration.pause();
+          this.narration.muted = false;
+          this.narration.currentTime = this.startTime;
+        }, 100);
+
+        for (let cue of this.cues) {
+          cue.prepareLoad();
         }
     },
 
