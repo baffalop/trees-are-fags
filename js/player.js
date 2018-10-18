@@ -372,6 +372,7 @@ Player.prototype =
     {
         if (!this.waitLoad) {
             this.waitLoad = true;
+            this.narration.pause();
             playButton.addClass('loading');
         }
     },
