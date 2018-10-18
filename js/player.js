@@ -214,7 +214,7 @@ Player.prototype =
 
     ffw: function ffw()
     {
-        if (!this.) {
+        if (!this.isWaiting()) {
             this.skip(this.skipTime);
         }
     },
