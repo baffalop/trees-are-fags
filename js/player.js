@@ -147,21 +147,14 @@ function Player(startTime, playlist, skipTime)
     // initialise cues
     this.cues = [];
     this.currentCueNumber = -1; // index of next/current cue (will be incremented on first call of nextCue)
-    const listlen = playlist.length;
-    for (let i = 0; i < listlen; i++) {
-        const newCue = new Cue(playlist[i][0], playlist[i][1]);
-        this.addCue(newCue);
+    for (let item of playlist) {
+        this.cues.push(new Cue(item[0], item[1]));
     }
     this.nextCue();
 }
 
 Player.prototype =
 {
-    addCue: function addCue(cue)
-    {
-        this.cues.push(cue);
-    },
-
     // get currently queued cue (or null)
     curCue: function curCue()
     {
@@ -221,7 +214,7 @@ Player.prototype =
 
     ffw: function ffw()
     {
-        if (!this.waitLoad) {
+        if (!this.) {
             this.skip(this.skipTime);
         }
     },
