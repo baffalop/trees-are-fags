@@ -326,15 +326,17 @@ Player.prototype =
     // (needs to be in an on-click event)
     prepareLoad: function prepareLoad()
     {
-        if (!this.preloaded) {
-            this.preloaded = true;
-            this.narration.currentTime = this.startTime;
-            this.narration.play();
-            window.setTimeout( () => { this.narration.pause(); }, 5);
-            const cueLen = this.cues.length;
-            for (let i = 0; i < cueLen; i++) {
-                this.cues[i].prepareLoad();
-            }
+        if (this.preloaded) {
+          return;
+        }
+
+        this.preloaded = true;
+        this.narration.currentTime = this.startTime;
+        this.narration.play();
+        window.setTimeout( () => { this.narration.pause(); }, 5);
+        const cueLen = this.cues.length;
+        for (let i = 0; i < cueLen; i++) {
+          this.cues[i].prepareLoad();
         }
     },
 
