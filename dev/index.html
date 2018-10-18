@@ -2,11 +2,11 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
     <link href="https://fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet" />
-    <link href="../treestyle.css" rel="stylesheet" />
-	<script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
-	<script type="text/javascript" src="../js/swipe.min.js"></script>
-    <script type="text/javascript" src="player.js"></script>
-    <script type="text/javascript" src="../js/timeline.js"></script>
+    <link href="treestyle.css" rel="stylesheet" />
+	<script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+	<script type="text/javascript" src="js/swipe.min.js"></script>
+    <script type="text/javascript" src="js/player.js"></script>
+    <script type="text/javascript" src="js/timeline.js"></script>
 	<script type="text/javascript">
 
 		let playButton;
@@ -83,6 +83,19 @@
             }, 10000);
 		}
 
+        const getCdnCode = (() => {
+          let cdnCode = '';
+
+          return () => {
+            if (cdnCode !== '') {
+              return cdnCode;
+            }
+
+            cdnCode = $('meta[name=forge-tag]').attr('value').split(':')[1];
+            return cdnCode;
+          }
+        })();
+
 		// for 'continue' button - swipe to next page and preload
 		function nextAndLoad()
         {
@@ -101,7 +114,7 @@
 
 <body>
 <!-- <div id="console"></div> -->
-<img src="../imgs/title-large.png" class="title" alt="Trees Are Fags" />
+<img src="imgs/title-large.png" class="title" alt="Trees Are Fags" />
 <div class="timeline"><canvas id="timeline" width="600" height="250"></canvas></div>
 
 <div id="slider" class="swipe">
@@ -119,7 +132,7 @@
 
                 </p>
                 <p align="right">
-                    <a onclick="nextAndLoad()" href="#">Click here to continue &gt;</a>
+                    <a onclick="nextAndLoad()" href="#">Continue &gt;</a>
                 </p>
             </div>
         </div>
@@ -128,7 +141,7 @@
         <div class="page">
             <div class="controls">
                 <div class="controlButton" id="rew"></div>
-                <div class="controlButton play loading" id="playpause"></div>
+                <div class="controlButton play" id="playpause"></div>
                 <div class="controlButton" id="ffw"></div>
             </div>
         </div>
@@ -147,7 +160,7 @@
                     href="http://www.nemerofsky.ca">www.nemerofsky.ca</a>.
 
                 </p>
-                <p align="center"><img src="../imgs/logos.png" width="150" /></p>
+                <p align="center"><img src="imgs/logos.png" width="150" /></p>
             </div>
         </div>
     </div>

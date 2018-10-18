@@ -67,9 +67,17 @@ Cue.prototype =
 
     prepareLoad: function prepareLoad()
     {
+        this.audio.muted = true;
         this.audio.play();
-        this.audio.pause();
-        this.virtualEndTime = this.start + this.audio.duration;
+        this.audio.addEventListener('loadedmetadata', () => {
+          this.audio.pause();
+          this.audio.muted = false;
+          this.audio.currentTime = 0;
+
+          this.virtualEndTime = this.start + this.audio.duration;
+
+          this.audio.removeEventListener('loadedmetadata');
+        });
     },
 
     play: function play()
@@ -326,15 +334,17 @@ Player.prototype =
     // (needs to be in an on-click event)
     prepareLoad: function prepareLoad()
     {
-        if (!this.preloaded) {
-            this.preloaded = true;
-            this.narration.currentTime = this.startTime;
-            this.narration.play();
-            window.setTimeout( () => { this.narration.pause(); }, 5);
-            const cueLen = this.cues.length;
-            for (let i = 0; i < cueLen; i++) {
-                this.cues[i].prepareLoad();
-            }
+        if (this.preloaded) {
+          return;
+        }
+
+        this.preloaded = true;
+        this.narration.currentTime = this.startTime;
+        this.narration.play();
+        window.setTimeout( () => { this.narration.pause(); }, 5);
+        const cueLen = this.cues.length;
+        for (let i = 0; i < cueLen; i++) {
+          this.cues[i].prepareLoad();
         }
     },
 
@@ -359,14 +369,15 @@ Player.prototype =
 
 function getFileName(affix)
 {
-    const dir = "../audio/"; // directory/URI
+    const cdn = "https://cdn.getforge.com/trees-are-fags.eu/" + getCdnCode();
+    const dir = "/audio/"; // directory/URI
     const prefix = "cue-"; // prefix if cue (ie. if passed a number)
     const postfix = ".mp3"; // format
     if (typeof affix === 'number') { // if passed a number, it's a cue
         if (affix < 10) affix = '0' + affix; // 0-padding
-        return dir + prefix + affix + postfix;
+        return cdn + dir + prefix + affix + postfix;
     } else { // if passed text, that's the name of the main narration file
-        return dir + affix + postfix;
+        return cdn + dir + affix + postfix;
     }
 }
 
