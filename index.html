@@ -193,16 +193,6 @@
             $('#rew').click( () => { player.rew(); });
             $('#ffw').click( () => { player.ffw(); });
 
-            // initialise timeline
-            var tlSettings = {
-                dimensions  : [601, 250],
-                pad         : 10,
-                offsetY     : 100,
-                segInterval : 0.01,
-                lineWeight  : 3
-            };
-            // timeline = new Timeline(tlSettings);
-
             // setup swipe
             var swipeElement = $('#slider');
             swipe = new Swipe(swipeElement[0], {
