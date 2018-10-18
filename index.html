@@ -83,6 +83,19 @@
             }, 10000);
 		}
 
+        const getCdnCode = (() => {
+          let cdnCode = '';
+
+          return () => {
+            if (cdnCode !== '') {
+              return cdnCode;
+            }
+
+            cdnCode = $('meta[name=forge-tag]').attr('value').split(':')[1];
+            return cdnCode;
+          }
+        })();
+
 		// for 'continue' button - swipe to next page and preload
 		function nextAndLoad()
         {

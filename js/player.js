@@ -371,19 +371,6 @@ function getFileName(affix)
     }
 }
 
-const getCdnCode = (() => {
-    let cdnCode = '';
-
-    return () => {
-        if (cdnCode !== '') {
-          return cdnCode;
-        }
-
-        cdnCode = $('meta[name=forge-tag]').attr('value').split(':')[1];
-        return cdnCode;
-    }
-})();
-
 // based on Knuth Shuffle (https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array)
 function shuffleArray(arr)
 {
