@@ -67,9 +67,17 @@ Cue.prototype =
 
     prepareLoad: function prepareLoad()
     {
+        this.audio.muted = true;
         this.audio.play();
-        this.audio.pause();
-        this.virtualEndTime = this.start + this.audio.duration;
+        this.audio.addEventListener('loadedmetadata', () => {
+          this.audio.pause();
+          this.audio.muted = false;
+          this.audio.currentTime = 0;
+
+          this.virtualEndTime = this.start + this.audio.duration;
+
+          this.audio.removeEventListener('loadedmetadata');
+        });
     },
 
     play: function play()
