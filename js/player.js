@@ -67,17 +67,22 @@ Cue.prototype =
 
     prepareLoad: function prepareLoad()
     {
-        this.audio.muted = true;
-        this.audio.play();
-        this.audio.addEventListener('loadedmetadata', () => {
-          this.audio.pause();
-          this.audio.muted = false;
-          this.audio.currentTime = 0;
+      this.audio.muted = true;
+      this.audio.play();
 
-          this.virtualEndTime = this.start + this.audio.duration;
+      window.setTimeout(() => {
+        this.audio.pause();
+        this.audio.muted = false;
+        this.audio.currentTime = 0;
+      }, 100);
 
-          this.audio.removeEventListener('loadedmetadata');
-        });
+      const calculateVirtualEndTime = () => { this.virtualEndTime = this.start + this.audio.duration; };
+
+      if (this.audio.readyState >= this.audio.HAVE_METADATA) {
+        calculateVirtualEndTime();
+      } else {
+        this.audio.addEventListener('loadedmetadata', calculateVirtualEndTime);
+      }
     },
 
     play: function play()
