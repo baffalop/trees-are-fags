@@ -37,6 +37,7 @@ function Cue(start, end)
 
     this.audio.addEventListener('canplaythrough', () => { this.loaded(); });
     this.audio.addEventListener('ended', () => { this.ended(); });
+    this.audio.addEventListener('waiting', () => { player.needToLoad(this); });
 }
 
 Cue.prototype =
@@ -60,9 +61,7 @@ Cue.prototype =
     loaded: function loaded()
     {
         this.hasLoaded = true;
-        if (player.waitLoad) {
-            player.loaded();
-        }
+        player.loaded(this);
     },
 
     prepareLoad: function prepareLoad()
@@ -88,7 +87,7 @@ Cue.prototype =
     play: function play()
     {
         if (!this.hasLoaded) {
-            player.audioWaiting();
+            player.needToLoad(this);
         } else if (this.audio) {
             this.audio.play();
         }
@@ -134,15 +133,16 @@ function Player(startTime, playlist, skipTime)
     this.waitForCue = false;
     this.waitLoad = false;
     this.startTime = startTime;
+    this.loadPool = new Set();
 
     // initialise main narration audio
     this.narration = new Audio(getFileName(dynamicNarration));
     this.narration.preload = "auto";
-    this.narration.addEventListener('canplaythrough', () => { this.loaded();       });
-    this.narration.addEventListener('timeupdate',     () => { this.seek();         });
-    this.narration.addEventListener('ended',          () => { this.ended();        });
-    this.narration.addEventListener('waiting',        () => { this.audioWaiting(); });
-    this.narration.addEventListener('playing',        () => { this.loaded();       });
+    this.narration.addEventListener('canplaythrough', () => { this.loaded(this);     });
+    this.narration.addEventListener('timeupdate',     () => { this.seek();           });
+    this.narration.addEventListener('ended',          () => { this.ended();          });
+    this.narration.addEventListener('waiting',        () => { this.needToLoad(this); });
+    this.narration.addEventListener('playing',        () => { this.loaded(this);     });
 
     // initialise cues
     this.cues = [];
@@ -358,24 +358,34 @@ Player.prototype =
         }
     },
 
-    // for canplaythrough event
-    loaded: function loaded()
+    loaded: function loaded(obj)
     {
-        if (this.waitLoad) {
+        this.loadPool.delete(obj);
+        if (!this.isWaiting()) {
             this.waitLoad = false;
             playButton.removeClass('loading');
         }
     },
 
-    // if any element that needs to play now hasn't loaded (or onWaiting events)
-    audioWaiting: function audioWaiting()
+    waitForLoad: function waitForLoad()
     {
-        if (!this.waitLoad) {
-            this.waitLoad = true;
-            this.narration.pause();
-            playButton.addClass('loading');
-        }
+        this.narration.pause();
+        playButton.addClass('loading');
     },
+
+    isWaiting: function isWaiting()
+    {
+        return this.loadPool.size > 0;
+    },
+
+    needToLoad: function needToLoad(obj)
+    {
+        const wasWaiting = this.isWaiting();
+        this.loadPool.add(obj);
+        if (!wasWaiting) {
+          this.waitForLoad();
+        }
+    }
 };
 
 function getFileName(affix)
