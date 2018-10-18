@@ -64,7 +64,7 @@ Cue.prototype =
         player.loaded(this);
     },
 
-    prepareLoad: function prepareLoad()
+    preload: function preload()
     {
       this.audio.muted = true;
       this.audio.play();
@@ -131,7 +131,6 @@ function Player(startTime, playlist, skipTime)
     this.playing = false;
     this.preloaded = false;
     this.waitForCue = false;
-    this.waitLoad = false;
     this.startTime = startTime;
     this.loadPool = new Set();
 
@@ -196,7 +195,8 @@ Player.prototype =
     // method called directly by pressing the play/pause button
     playPause: function playPause()
     {
-        if (!this.waitLoad) {
+        this.preload();
+        if (!this.isWaiting()) {
             if (this.playing) {
                 this.pause();
             } else {
@@ -207,7 +207,7 @@ Player.prototype =
 
     rew: function rew()
     {
-        if (!this.waitLoad) {
+        if (!this.isWaiting()) {
             this.skip(-this.skipTime);
         }
     },
@@ -329,7 +329,7 @@ Player.prototype =
 
     // play and pause each audio asset to trigger preloading on iOS
     // (needs to be in an on-click event)
-    prepareLoad: function prepareLoad()
+    preload: function prepareLoad()
     {
         if (this.preloaded) {
           return;
@@ -347,7 +347,7 @@ Player.prototype =
         }, 100);
 
         for (let cue of this.cues) {
-          cue.prepareLoad();
+          cue.preload();
         }
     },
 
@@ -355,7 +355,6 @@ Player.prototype =
     {
         this.loadPool.delete(obj);
         if (!this.isWaiting()) {
-            this.waitLoad = false;
             playButton.removeClass('loading');
         }
     },
