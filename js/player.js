@@ -358,6 +358,9 @@ Player.prototype =
         this.loadPool.delete(obj);
         if (!this.isWaiting()) {
             playButton.removeClass('loading');
+            if (this.playing) {
+                this.narration.play();
+            }
         }
     },
 
