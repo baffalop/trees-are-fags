@@ -329,7 +329,7 @@ Player.prototype =
 
     // play and pause each audio asset to trigger preloading on iOS
     // (needs to be in an on-click event)
-    preload: function prepareLoad()
+    preload: function prepareLoad(includeMain = true)
     {
         if (this.preloaded) {
           return;
@@ -337,14 +337,16 @@ Player.prototype =
 
         this.preloaded = true;
 
-        this.narration.muted = true;
-        this.narration.play();
+        if (includeMain) {
+          this.narration.muted = true;
+          this.narration.play();
 
-        window.setTimeout( () => {
-          this.narration.pause();
-          this.narration.muted = false;
-          this.narration.currentTime = this.startTime;
-        }, 100);
+          window.setTimeout( () => {
+            this.narration.pause();
+            this.narration.muted = false;
+            this.narration.currentTime = this.startTime;
+          }, 100);
+        }
 
         for (let cue of this.cues) {
           cue.preload();
