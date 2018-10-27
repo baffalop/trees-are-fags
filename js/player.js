@@ -43,29 +43,29 @@ function Cue(start, end)
 
 Cue.prototype =
   {
-    getOverlap: function getOverlap()
+    getOverlap: function ()
     {
       return Math.max(0, this.waitTime - this.start)
     },
 
-    getWaitInterval: function getWaitInterval()
+    getWaitInterval: function ()
     {
       return Math.max(0, this.audio.duration - this.getOverlap())
     },
 
-    getElapsedWait: function getElapsedWait()
+    getElapsedWait: function ()
     {
       const doneTime = this.start + this.audio.currentTime
       return Math.max(0, doneTime - this.waitTime)
     },
 
-    loaded: function loaded()
+    loaded: function ()
     {
       this.hasLoaded = true
       player.loaded(this)
     },
 
-    preload: function preload()
+    preload: function ()
     {
       this.audio.muted = true
       this.audio.play()
@@ -86,7 +86,7 @@ Cue.prototype =
       }
     },
 
-    play: function play()
+    play: function ()
     {
       if (!this.hasLoaded) {
         player.needToLoad(this)
@@ -95,19 +95,19 @@ Cue.prototype =
       }
     },
 
-    pause: function pause()
+    pause: function ()
     {
       this.audio.pause()
     },
 
-    go: function go()
+    go: function ()
     {
       this.active = true
       if (player.playing)this.play()
     },
 
     // played through (onEnded)
-    ended: function ended()
+    ended: function ()
     {
       this.active = false
       this.audio.currentTime = 0
@@ -115,7 +115,7 @@ Cue.prototype =
       player.nextCue()
     },
 
-    deactivate: function deactivate()
+    deactivate: function ()
     {
       if (this.active) {
         this.active = false
@@ -157,7 +157,7 @@ function Player(startTime, playlist, skipTime)
 Player.prototype =
   {
     // get currently queued cue (or null)
-    curCue: function curCue()
+    curCue: function ()
     {
       if (this.currentCueNumber >= this.cues.length) {
         return null
@@ -166,7 +166,7 @@ Player.prototype =
     },
 
     // get currently active cue (or null)
-    activeCue: function activeCue()
+    activeCue: function ()
     {
       const cue = this.curCue()
       if (cue && cue.active) {
@@ -176,7 +176,7 @@ Player.prototype =
       }
     },
 
-    play: function play()
+    play: function ()
     {
       this.playing = true
       if (!this.waitForCue) this.narration.play()
@@ -185,7 +185,7 @@ Player.prototype =
       playButton.addClass('pause')
     },
 
-    pause: function pause()
+    pause: function ()
     {
       this.playing = false
       if (!this.waitForCue) this.narration.pause()
@@ -195,7 +195,7 @@ Player.prototype =
     },
 
     // method called directly by pressing the play/pause button
-    playPause: function playPause()
+    playPause: function ()
     {
       this.preload()
       if (!this.isWaiting()) {
@@ -207,27 +207,27 @@ Player.prototype =
       }
     },
 
-    rew: function rew()
+    rew: function ()
     {
       if (!this.isWaiting()) {
         this.skip(-this.skipTime)
       }
     },
 
-    ffw: function ffw()
+    ffw: function ()
     {
       if (!this.isWaiting()) {
         this.skip(this.skipTime)
       }
     },
 
-    skip: function skip(amount)
+    skip: function (amount)
     {
       const virtualTime = this.getVirtualTime()
       this.setVirtualTime(virtualTime + amount)
     },
 
-    getVirtualTime: function getVirtualTime()
+    getVirtualTime: function ()
     {
       let virtualTime = this.narration.currentTime
 
@@ -247,7 +247,7 @@ Player.prototype =
       return virtualTime
     },
 
-    setVirtualTime: function setVirtualTime(virtualTime)
+    setVirtualTime: function (virtualTime)
     {
       let cue = this.curCue()
       if (cue) cue.deactivate()
@@ -283,7 +283,7 @@ Player.prototype =
       }
     },
 
-    seek: function seek()
+    seek: function ()
     {
       const cue = this.curCue()
       if (cue) {
@@ -296,13 +296,13 @@ Player.prototype =
       // timeline.draw(this.narration.currentTime / this.narration.duration);
     },
 
-    nextCue: function nextCue()
+    nextCue: function ()
     {
       this.currentCueNumber++
       return this.curCue()
     },
 
-    wait: function wait()
+    wait: function ()
     {
       if (!this.waitForCue) {
         this.waitForCue = true
@@ -310,7 +310,7 @@ Player.prototype =
       }
     },
 
-    resume: function resume()
+    resume: function ()
     {
       if (this.waitForCue) {
         this.waitForCue = false
@@ -319,7 +319,7 @@ Player.prototype =
     },
 
     // finished playing through
-    ended: function ended()
+    ended: function ()
     {
       this.pause()
       const cue = this.activeCue()
@@ -332,7 +332,7 @@ Player.prototype =
 
     // play and pause each audio asset to trigger preloading on iOS
     // (needs to be in an on-click event)
-    preload: function prepareLoad(includeMain = true)
+    preload: function (includeMain = true)
     {
       if (this.preloaded) {
         return
@@ -357,7 +357,7 @@ Player.prototype =
       }
     },
 
-    loaded: function loaded(obj)
+    loaded: function (obj)
     {
       this.loadPool.delete(obj)
       if (!this.isWaiting()) {
@@ -368,18 +368,18 @@ Player.prototype =
       }
     },
 
-    waitForLoad: function waitForLoad()
+    waitForLoad: function ()
     {
       this.narration.pause()
       playButton.addClass('loading')
     },
 
-    isWaiting: function isWaiting()
+    isWaiting: function ()
     {
       return this.loadPool.size > 0
     },
 
-    needToLoad: function needToLoad(obj)
+    needToLoad: function (obj)
     {
       const wasWaiting = this.isWaiting()
       this.loadPool.add(obj)
