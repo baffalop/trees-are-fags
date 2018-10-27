@@ -227,10 +227,6 @@ Player.prototype =
 
     getVirtualTime: function getVirtualTime()
     {
-        console.log(`currentTime is ${this.narration.currentTime}`)
-        const buff = this.narration.buffered
-        console.log(`buffered ${buff.start(0)} to ${buff.end(0)}`)
-
         let virtualTime = this.narration.currentTime;
 
         // add wait intervals of all previous cues
@@ -275,9 +271,7 @@ Player.prototype =
             realTime -= cue.getWaitInterval();
         }
 
-        console.log(`Setting current time (${this.narration.currentTime}) to realTime ${realTime}`);
         this.narration.currentTime = realTime;
-        console.log(`currentTime result is ${this.narration.currentTime}`);
     },
 
     seek: function seek()
