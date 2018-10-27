@@ -1,120 +1,124 @@
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-    <link href="https://fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet" />
-    <link href="../treestyle.css" rel="stylesheet" />
-	<script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
-	<script type="text/javascript" src="../js/swipe.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+    <link href="https://fonts.googleapis.com/css?family=EB+Garamond" rel="stylesheet"/>
+    <link href="../treestyle.css" rel="stylesheet"/>
+    <script type="text/javascript" src="../js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../js/swipe.min.js"></script>
     <script type="text/javascript" src="../js/player.js"></script>
     <script type="text/javascript" src="../js/timeline.js"></script>
-	<script type="text/javascript">
+    <script type="text/javascript">
 
-		let playButton;
-		let swipe;
+      let playButton
+      let swipe
 
-		let cues;
-		let player;
-		let timeline;
+      let cues
+      let player
+      let timeline
 
-		$(document).ready(init);
+      $(document).ready(init)
 
-		function init()
-        {
-		    // setup jQuery refs
-			playButton = $('#playpause');
+      function init()
+      {
+        // setup jQuery refs
+        playButton = $('#playpause')
 
-            // setup player
-            const cuePoolTotal = 22; // total number of phrases in the pool
-            cues = new Cues(cuePoolTotal);
-            // DEFINE CUE POSITIONS HERE
-            const playlist = [
-                [263.8, 291.1], [359.4, 377.3], [432.0, 458.7], [533.9, 534.5], [639.3, 640], [717.5, 718], [845.9, 885.4]
-            ];
-            const startTime = 0;
-            const skipTime = 10; // seconds to skip forward/back using buttons
+        // setup player
+        const cuePoolTotal = 22 // total number of phrases in the pool
+        cues = new Cues(cuePoolTotal)
 
-            player = new Player(startTime, playlist, skipTime);
-            playButton.click( () => { player.playPause(); });
-            $('#rew').click( () => { player.rew(); });
-            $('#ffw').click( () => { player.ffw(); });
+        // DEFINE CUE POSITIONS HERE
+        const playlist = [
+          [263.8, 291.1], [359.4, 377.3], [432.0, 458.7], [533.9, 534.5], [639.3, 640], [717.5, 718], [845.9, 885.4]
+        ]
+        const startTime = 0
+        const skipTime = 10 // seconds to skip forward/back using buttons
 
-            // initialise timeline
-            const tlSettings = {
-                dimensions  : [601, 250],
-                pad         : 10,
-                offsetY     : 100,
-                segInterval : 0.01,
-                lineWeight  : 3
-            };
-            // timeline = new Timeline(tlSettings);
+        player = new Player(startTime, playlist, skipTime)
+        playButton.click(() => { player.playPause() })
+        $('#rew').click(()  => { player.rew()       })
+        $('#ffw').click(()  => { player.ffw()       })
 
-            // setup swipe
-			swipe = new Swipe($('#slider')[0], {
-				speed: 700, // of transition (ms)
-				continuous: false, // ie. don't cycle back round
-				disableScroll: false,
-                draggable: true, // swipe on desktop
-			});
-			swipe.setup();
+        // initialise timeline
+        const tlSettings = {
+          dimensions: [601, 250],
+          pad: 10,
+          offsetY: 100,
+          segInterval: 0.01,
+          lineWeight: 3
+        }
+        // timeline = new Timeline(tlSettings);
 
-            // setup left and right keys (for closure)
-            const Key = {
-                LEFT: 37,
-                RIGHT: 39
-            };
+        // setup swipe
+        swipe = new Swipe($('#slider')[0], {
+          speed: 700, // of transition (ms)
+          continuous: false, // ie. don't cycle back round
+          disableScroll: false,
+          draggable: true, // swipe on desktop
+        })
+        swipe.setup()
 
-            // arrow keys to move between swipe pages
-			window.addEventListener('keydown', function(e) {
-				if (!e) e = window.event;
-				// setup keys
-				const keycode = e.keyCode || e.which;
-				// test keys
-				if (keycode === Key.LEFT) {
-					swipe.prev();
-				} else if (keycode === Key.RIGHT) {
-					swipe.next();
-				}
-			});
+        // setup left and right keys (for closure)
+        const Key = {
+          LEFT: 37,
+          RIGHT: 39
+        }
 
-			// report seek time
-            window.setInterval( () => {
-                console.log("Play position: " + player.narration.currentTime);
-            }, 10000);
-		}
-
-        const getCdnCode = (() => {
-          let cdnCode = '';
-
-          return () => {
-            if (cdnCode !== '') {
-              return cdnCode;
-            }
-
-            cdnCode = $('meta[name=forge-tag]').attr('value').split(':')[1];
-            return cdnCode;
+        // arrow keys to move between swipe pages
+        window.addEventListener('keydown', function (e) {
+          if (!e) e = window.event
+          // setup keys
+          const keycode = e.keyCode || e.which
+          // test keys
+          if (keycode === Key.LEFT) {
+            swipe.prev()
+          } else if (keycode === Key.RIGHT) {
+            swipe.next()
           }
-        })();
+        })
 
-		// for 'continue' button - swipe to next page and preload
-		function nextAndLoad()
+        // report seek time
+        window.setInterval(() =>
         {
-			player.preload(false); // trigger preloading on iOS
-			swipe.next();
-		}
+          console.log("Play position: " + player.narration.currentTime)
+        }, 10000)
+      }
 
-		function consoleLog(text)
-        {
-			$('#console').append('<p>' + text + '</p>');
-			console.log(text);
-		}
+      const getCdnCode = (() => {
+        let cdnCode = ''
 
-	</script>
+        return () => {
+          if (cdnCode !== '') {
+            return cdnCode
+          }
+
+          cdnCode = $('meta[name=forge-tag]').attr('value').split(':')[1]
+          return cdnCode
+        }
+      })()
+
+      // for 'continue' button - swipe to next page and preload
+      function nextAndLoad()
+      {
+        player.preload(false) // trigger preloading on iOS
+        swipe.next()
+      }
+
+      function consoleLog(text)
+      {
+        $('#console').append('<p>' + text + '</p>')
+        console.log(text)
+      }
+
+    </script>
 </head>
 
 <body>
 <!-- <div id="console"></div> -->
-<img src="../imgs/title-large.png" class="title" alt="Trees Are Fags" />
-<div class="timeline"><canvas id="timeline" width="600" height="250"></canvas></div>
+<img src="../imgs/title-large.png" class="title" alt="Trees Are Fags"/>
+<div class="timeline">
+    <canvas id="timeline" width="600" height="250"></canvas>
+</div>
 
 <div id="slider" class="swipe">
     <div class="swipe-wrap">
@@ -156,10 +160,10 @@
                     Gubaidulina's <em>Sonata for Two Bassoons</em> (1977) was performed by Ronan Whittern. <em>Trees are
                     Fags</em> was commissioned by Lux and co-produced by the <em>Cruising the Seventies</em> research
                     team at the Edinburgh College of Art. For more information on Benny Nemerofsky Ramsay, visit <a
-                    href="http://www.nemerofsky.ca">www.nemerofsky.ca</a>.
+                        href="http://www.nemerofsky.ca">www.nemerofsky.ca</a>.
 
                 </p>
-                <p align="center"><img src="../imgs/logos.png" width="150" /></p>
+                <p align="center"><img src="../imgs/logos.png" width="150"/></p>
             </div>
         </div>
     </div>
