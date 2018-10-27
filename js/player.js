@@ -271,7 +271,14 @@ Player.prototype =
             realTime -= cue.getWaitInterval();
         }
 
-        this.narration.currentTime = realTime;
+        // check boundary conditions on duration of audio
+        if (realTime < 0) {
+            this.narration.currentTime = 0;
+        } else if (realTime > this.narration.duration) {
+            this.ended();
+        } else {
+          this.narration.currentTime = realTime;
+        }
     },
 
     seek: function seek()
