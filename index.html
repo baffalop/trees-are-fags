@@ -40,24 +40,6 @@
             });
             swipe.setup();
 
-            // setup left and right keys (for closure)
-            var Key = {
-                LEFT: 37,
-                RIGHT: 39
-            };
-            // arrow keys to move between swipe pages
-            window.addEventListener('keydown', function(e) {
-                if (!e) e = window.event;
-                // setup keys
-                var keycode = e.keyCode || e.which;
-                // test keys
-                if (keycode === Key.LEFT) {
-                    swipe.prev();
-                } else if (keycode === Key.RIGHT) {
-                    if (swipe.getPos() === 0) player.preload();
-                    swipe.next();
-                }
-            });
             // report seek time
             window.setInterval( () => {
                 console.log("Play position: " + player.narration.currentTime);
