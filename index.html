@@ -85,8 +85,9 @@
                     device, and when you are ready, swipe to the next screen to begin <em>Trees Are Fags</em>
 
                 </p>
-                <p align="right">
-                    <a onclick="nextAndLoad()" href="#">Continue &gt;</a>
+                <p align="right" id="deviceready">
+                    <div class="controlButton playpause pause listening"></div>
+                    <a onclick="nextAndLoad()" class="received" href="#">Continue &gt;</a>
                 </p>
             </div>
         </div>
@@ -94,9 +95,9 @@
         <!-- ................page 2...........-->
         <div class="page">
             <div class="controls">
-                <div class="controlButton" id="rew"></div>
-                <div class="controlButton play" id="playpause"></div>
-                <div class="controlButton" id="ffw"></div>
+                <div class="controlButton rew"></div>
+                <div class="controlButton playpause play"></div>
+                <div class="controlButton ffw"></div>
             </div>
         </div>
 
@@ -119,5 +120,9 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript" src="cordova.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
+
 </body>
 </html>

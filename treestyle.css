@@ -87,17 +87,17 @@ body {
     opacity: 0.5;
 }
 
-#ffw {
+.ffw {
     background-image: url(imgs/wind-fw.png);
     background-position: 100%;
 }
 
-#rew {
+.rew {
     background-image: url(imgs/wind-back.png);
     background-position: 0%;
 }
 
-#playpause {
+.playpause {
     background-image: url(imgs/play-pause-wait.png);
     width: 180px;
     background-size: 100% auto;
