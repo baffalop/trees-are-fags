@@ -389,21 +389,6 @@ Player.prototype =
     }
   }
 
-function getFileName(affix)
-{
-  const cdn = "https://cdn.getforge.com/trees-are-fags.eu/" + getCdnCode()
-  const dir = "/audio/" // directory/URI
-  const prefix = "cue-" // prefix if cue (ie. if passed a number)
-  const postfix = ".mp3" // format
-
-  if (typeof affix === 'number') { // if passed a number, it's a cue
-    if (affix < 10) affix = '0' + affix // 0-padding
-    return cdn + dir + prefix + affix + postfix
-  } else { // if passed text, that's the name of the main narration file
-    return cdn + dir + affix + postfix
-  }
-}
-
 // based on Knuth Shuffle (https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array)
 function shuffleArray(arr)
 {
