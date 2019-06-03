@@ -33,12 +33,28 @@ function Cue(start, end)
   this.virtualEndTime = 0
 
   const file = cues.getNextCue()
-  this.audio = new Audio(file)
-  this.audio.preload = 'auto'
 
-  this.audio.addEventListener('canplaythrough', () => { this.loaded()           })
-  this.audio.addEventListener('ended',          () => { this.ended()            })
-  this.audio.addEventListener('waiting',        () => { player.needToLoad(this) })
+  this.audio = new Media(
+    file,
+    () => console.log('Media success!'),
+    errorCode => console.log('Media fail: ' + errorCode),
+    statusCode => {
+      switch (statusCode) {
+        case Media.MEDIA_NONE:
+          player.needToLoad(this)
+          break
+        case Media.MEDIA_STARTING:
+          player.needToLoad(this)
+          break
+        case Media.MEDIA_RUNNING:
+          this.loaded(this)
+          break
+        case Media.MEDIA_STOPPED:
+          this.ended()
+          break
+      }
+    }
+  )
 }
 
 Cue.prototype =
@@ -67,16 +83,6 @@ Cue.prototype =
 
     preload: function ()
     {
-      this.audio.muted = true
-      this.audio.play()
-
-      window.setTimeout(() =>
-      {
-        this.audio.pause()
-        this.audio.muted = false
-        this.audio.currentTime = 0
-      }, 100)
-
       const calculateVirtualEndTime = () => this.virtualEndTime = this.start + this.audio.duration
 
       if (this.audio.readyState >= this.audio.HAVE_METADATA) {
@@ -135,6 +141,28 @@ function Player(startTime, playlist, skipTime)
   this.waitForCue = false
   this.startTime = startTime
   this.loadPool = new Set()
+
+  this.narration = new Media(
+    dynamicNarration,
+    () => console.log('Media success!'),
+    errorCode => console.log('Media fail: ' + errorCode),
+    statusCode => {
+      switch (statusCode) {
+        case Media.MEDIA_NONE:
+          this.needToLoad(this)
+          break
+        case Media.MEDIA_STARTING:
+          this.needToLoad(this)
+          break
+        case Media.MEDIA_RUNNING:
+          this.loaded(this)
+          break
+        case Media.MEDIA_STOPPED:
+          this.ended()
+          break
+      }
+    }
+  )
 
   // initialise main narration audio
   this.narration = new Audio(getFileName(dynamicNarration))
