@@ -31,6 +31,9 @@ function Cue(start, end)
   this.active = false
   this.hasLoaded = false
   this.virtualEndTime = 0
+  this.mediaState = Media.MEDIA_NONE
+
+  this.startingListener = null
 
   const file = cues.getNextCue()
 
@@ -39,12 +42,17 @@ function Cue(start, end)
     () => console.log('Media success!'),
     errorCode => console.log('Media fail: ' + errorCode),
     statusCode => {
+      this.mediaState = statusCode
       switch (statusCode) {
         case Media.MEDIA_NONE:
           player.needToLoad(this)
           break
         case Media.MEDIA_STARTING:
           player.needToLoad(this)
+          if (this.startingListener instanceof Function) {
+            this.startingListener()
+            this.startingListener = null
+          }
           break
         case Media.MEDIA_RUNNING:
           this.loaded(this)
@@ -66,13 +74,16 @@ Cue.prototype =
 
     getWaitInterval: function ()
     {
-      return Math.max(0, this.audio.duration - this.getOverlap())
+      return Math.max(0, this.audio.getDuration() - this.getOverlap())
     },
 
-    getElapsedWait: function ()
+    getElapsedWait: function (callback)
     {
-      const doneTime = this.start + this.audio.currentTime
-      return Math.max(0, doneTime - this.waitTime)
+      this.audio.getCurrentPosition(position => {
+        const doneTime = this.start + position
+        const elapsedWait = Math.max(0, doneTime - this.waitTime)
+        callback(elapsedWait)
+      })
     },
 
     loaded: function ()
@@ -83,12 +94,12 @@ Cue.prototype =
 
     preload: function ()
     {
-      const calculateVirtualEndTime = () => this.virtualEndTime = this.start + this.audio.duration
+      const calculateVirtualEndTime = () => this.virtualEndTime = this.start + this.audio.getDuration()
 
-      if (this.audio.readyState >= this.audio.HAVE_METADATA) {
+      if (this.mediaState >= Media.MEDIA_STARTING) {
         calculateVirtualEndTime()
       } else {
-        this.audio.addEventListener('loadedmetadata', calculateVirtualEndTime)
+        this.startingListener = calculateVirtualEndTime
       }
     },
 
@@ -109,14 +120,14 @@ Cue.prototype =
     go: function ()
     {
       this.active = true
-      if (player.playing)this.play()
+      if (player.playing) this.play()
     },
 
     // played through (onEnded)
     ended: function ()
     {
       this.active = false
-      this.audio.currentTime = 0
+      this.audio.seekTo(0)
       player.resume()
       player.nextCue()
     },
@@ -126,7 +137,7 @@ Cue.prototype =
       if (this.active) {
         this.active = false
         this.audio.pause()
-        this.audio.currentTime = 0
+        this.audio.seekTo(0)
       }
     }
 
@@ -163,15 +174,6 @@ function Player(startTime, playlist, skipTime)
       }
     }
   )
-
-  // initialise main narration audio
-  this.narration = new Audio(getFileName(dynamicNarration))
-  this.narration.preload = "auto"
-  this.narration.addEventListener('canplaythrough', () => { this.loaded(this)     })
-  this.narration.addEventListener('timeupdate',     () => { this.seek()           })
-  this.narration.addEventListener('ended',          () => { this.ended()          })
-  this.narration.addEventListener('waiting',        () => { this.needToLoad(this) })
-  this.narration.addEventListener('playing',        () => { this.loaded(this)     })
 
   // initialise cues
   this.cues = []
@@ -251,28 +253,29 @@ Player.prototype =
 
     skip: function (amount)
     {
-      const virtualTime = this.getVirtualTime()
-      this.setVirtualTime(virtualTime + amount)
+      this.getVirtualTime(result => this.setVirtualTime(result + amount))
     },
 
-    getVirtualTime: function ()
+    getVirtualTime: function (callback)
     {
-      let virtualTime = this.narration.currentTime
+      this.narration.getCurrentPosition(position => {
+        let virtualTime = position
 
-      // add wait intervals of all previous cues
-      for (let i = 0; i < this.currentCueNumber; i++) {
-        const cue = this.cues[i]
-        if (cue.getWaitInterval() > 0) {
-          virtualTime += cue.getWaitInterval()
+        // add wait intervals of all previous cues
+        for (let i = 0; i < this.currentCueNumber; i++) {
+          const cue = this.cues[i]
+          if (cue.getWaitInterval() > 0) {
+            virtualTime += cue.getWaitInterval()
+          }
         }
-      }
 
-      // check if we're waiting on current cue
-      if (this.waitForCue) {
-        virtualTime += this.activeCue().getElapsedWait()
-      }
-
-      return virtualTime
+        // check if we're waiting on current cue
+        if (this.waitForCue) {
+          this.activeCue().getElapsedWait(elapsedWait => callback(virtualTime + elapsedWait))
+        } else {
+          callback(virtualTime)
+        }
+      })
     },
 
     setVirtualTime: function (virtualTime)
@@ -283,31 +286,43 @@ Player.prototype =
       this.resume()
 
       let realTime = virtualTime
+      let unWait = false
       while (cue = this.nextCue()) {
         if (cue.start > realTime) {
           break
         }
 
         if (cue.virtualEndTime > realTime) {
-          cue.audio.currentTime = realTime - cue.start
+          cue.audio.seekTo(realTime - cue.start)
           cue.go()
-          if (cue.getElapsedWait() > 0) {
-            realTime = cue.waitTime
-            this.wait()
-          }
+          unWait = true
           break
         }
 
         realTime -= cue.getWaitInterval()
       }
 
-      // check boundary conditions on duration of audio
-      if (realTime < 0) {
-        this.narration.currentTime = 0
-      } else if (realTime > this.narration.duration) {
-        this.ended()
+      const andFinally = finalRealtime => {
+        // check boundary conditions on duration of audio
+        if (finalRealtime < 0) {
+          this.narration.seekTo(0)
+        } else if (realTime > this.narration.getDuration()) {
+          this.ended()
+        } else {
+          this.narration.seekTo(realTime)
+        }
+      }
+
+      if (unWait) {
+        cue.getElapsedWait(elapsedWait => {
+          if (elapsedWait > 0) {
+            realTime = cue.waitTime
+            this.wait()
+          }
+          andFinally(realTime)
+        })
       } else {
-        this.narration.currentTime = realTime
+        andFinally(realTime)
       }
     },
 
@@ -315,13 +330,16 @@ Player.prototype =
     {
       const cue = this.curCue()
       if (cue) {
-        if (!cue.active && this.narration.currentTime >= cue.start) {
-          cue.go()
-        } else if (cue.active && this.narration.currentTime >= cue.waitTime) {
-          this.wait()
+        if (cue.active) {
+          this.narration.getCurrentPosition(position => {
+            if (position >= cue.waitTime) this.wait()
+          })
+        } else {
+          this.narration.getCurrentPosition(position => {
+            if (position >= cue.start) cue.go()
+          })
         }
       }
-      // timeline.draw(this.narration.currentTime / this.narration.duration);
     },
 
     nextCue: function ()
@@ -354,31 +372,19 @@ Player.prototype =
       if (cue) cue.deactivate()
       this.waitForCue = false
       this.currentCueNumber = 0
-      this.narration.currentTime = 0
+      this.narration.seekTo(0)
       swipe.slide(2, 600) // go to credits page
     },
 
     // play and pause each audio asset to trigger preloading on iOS
     // (needs to be in an on-click event)
-    preload: function (includeMain = true)
+    preload: function ()
     {
       if (this.preloaded) {
         return
       }
 
       this.preloaded = true
-
-      if (includeMain) {
-        this.narration.muted = true
-        this.narration.play()
-
-        window.setTimeout(() =>
-        {
-          this.narration.pause()
-          this.narration.muted = false
-          this.narration.currentTime = this.startTime
-        }, 100)
-      }
 
       for (let cue of this.cues) {
         cue.preload()
