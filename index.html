@@ -11,64 +11,6 @@
     <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
     <script type="text/javascript" src="js/swipe.min.js"></script>
     <script type="text/javascript" src="js/player.js"></script>
-    <script type="text/javascript">
-
-        var playButton;
-        var swipe;
-        var player;
-
-        $(document).ready(init);
-
-        function init() {
-            // setup jQuery refs
-            playButton = $('#playpause');
-
-            // DEFINE CUE POSITIONS HERE
-            const playlist = [
-              [263.8, 291.1], [359.4, 377.3], [432.0, 458.7], [533.9, 534.5], [639.3, 640], [717.5, 718], [845.9, 885.4]
-            ]
-            const startTime = 0
-            const skipTime = 10 // seconds to skip forward/back using buttons
-            player = new Player(startTime, playlist, skipTime);
-
-            playButton.click( () => { player.playPause(); });
-            $('#rew').click( () => { player.rew(); });
-            $('#ffw').click( () => { player.ffw(); });
-
-            // setup swipe
-            var swipeElement = $('#slider');
-            swipe = new Swipe(swipeElement[0], {
-                speed: 700, // of transition (ms)
-                continuous: false, // ie. don't cycle back round
-                disableScroll: false
-            });
-            swipe.setup();
-
-            // report seek time
-            window.setInterval( () => {
-                console.log("Play position: " + player.narration.currentTime);
-            }, 10000);
-        }
-
-        // for 'continue' button - swipe to next page and preload
-        function nextAndLoad() {
-            player.preload(); // trigger preloading on iOS
-            swipe.next();
-        }
-
-        function getFileName(affix) {
-          const dir = "audio/"; // directory/URI
-          const prefix = "cue-"; // prefix if cue (ie. if passed a number)
-          const postfix = ".mp3"; // format
-          if (typeof affix === 'number') { // if passed a number, it's a cue
-            if (affix < 10) affix = '0' + affix; // 0-padding
-            return dir + prefix + affix + postfix;
-          } else { // if passed text, that's the name of the main narration file
-            return dir + affix + postfix;
-          }
-        }
-
-    </script>
 </head>
 
 <body>

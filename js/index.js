@@ -32,14 +32,53 @@ var app = {
 
     // Update DOM on a Received Event
     receivedEvent: function(id) {
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
+        const parentElement = document.getElementById(id);
+        const listeningElement = parentElement.querySelector('.listening');
+        const receivedElement = parentElement.querySelector('.received');
 
         listeningElement.setAttribute('style', 'display:none;');
         receivedElement.setAttribute('style', 'display:block;');
 
         console.log('Received Event: ' + id);
+
+        // setup jQuery refs
+        window.playButton = $('#playpause');
+
+        const cuePoolTotal = 22 // total number of phrases in the pool
+        window.cues = new Cues(cuePoolTotal)
+
+        // DEFINE CUE POSITIONS HERE
+        const playlist = [
+            [263.8, 291.1], [359.4, 377.3], [432.0, 458.7], [533.9, 534.5], [639.3, 640], [717.5, 718], [845.9, 885.4]
+        ]
+        const startTime = 0
+        const skipTime = 10 // seconds to skip forward/back using buttons
+        window.player = new Player(startTime, playlist, skipTime);
+
+        playButton.click( () => { player.playPause(); });
+        $('#rew').click( () => { player.rew(); });
+        $('#ffw').click( () => { player.ffw(); });
+
+        $('.received').click(
+          function nextAndLoad() {
+              player.preload() // trigger preloading on iOS
+              swipe.next()
+          }
+        )
+
+        // setup swipe
+        const swipeElement = $('#slider');
+        window.swipe = new Swipe(swipeElement[0], {
+            speed: 700, // of transition (ms)
+            continuous: false, // ie. don't cycle back round
+            disableScroll: false
+        });
+        swipe.setup();
+
+        // report seek time
+        window.setInterval( () => {
+            console.log("Play position: " + player.narration.currentTime);
+        }, 10000);
     }
 };
 

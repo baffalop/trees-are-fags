@@ -441,3 +441,15 @@ function shuffleArray(arr)
   }
   return arr
 }
+
+function getFileName(affix) {
+  const dir = "audio/"; // directory/URI
+  const prefix = "cue-"; // prefix if cue (ie. if passed a number)
+  const postfix = ".mp3"; // format
+  if (typeof affix === 'number') { // if passed a number, it's a cue
+    if (affix < 10) affix = '0' + affix; // 0-padding
+    return dir + prefix + affix + postfix;
+  } else { // if passed text, that's the name of the main narration file
+    return dir + affix + postfix;
+  }
+}
