@@ -39,9 +39,10 @@ function Cue(start, end)
 
   this.audio = new Media(
     file,
-    () => console.log('Media success!'),
-    errorCode => console.log('Media fail: ' + errorCode),
+    () => console.log('Cue: media success!'),
+    errorCode => console.log('Cue: media fail: ' + errorCode),
     statusCode => {
+      console.log(`Cue: status ${statusCode}`)
       this.mediaState = statusCode
       switch (statusCode) {
         case Media.MEDIA_NONE:
@@ -155,9 +156,10 @@ function Player(startTime, playlist, skipTime)
 
   this.narration = new Media(
     dynamicNarration,
-    () => console.log('Media success!'),
-    errorCode => console.log('Media fail: ' + errorCode),
+    () => console.log('Narration: media success!'),
+    errorCode => console.log('Narration: media fail: ' + errorCode),
     statusCode => {
+      console.log(`Narration: status ${statusCode}`)
       switch (statusCode) {
         case Media.MEDIA_NONE:
           this.needToLoad(this)
