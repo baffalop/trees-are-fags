@@ -59,22 +59,28 @@
             }, 10000);
         }
 
-        function Player(startTime, skipTime) {
+        function getRandomCueArrangement() {
+            const v = Math.floor(Math.random() * 5);
+            return 'trees-are-fags_cues-0' + v;
+        }
 
+        function Player(startTime, skipTime) {
             this.playing = false;
             this.waitLoad = true;
             this.preloaded = false;
             this.skipTime = skipTime;
             this.startTime = startTime;
 
-            // initialise main narration audio
-            this.narration = new Audio(getFileName("main-narration-updated"));
+            const src = getFileName(getRandomCueArrangement(), true)
+            console.log('Using arrangement: ' + src)
+            this.narration = new Audio(src);
+
             this.narration.preload = "auto";
-            this.narration.addEventListener('canplaythrough',  () => { this.loaded(); });
-            this.narration.addEventListener('timeupdate',  () => { this.seek(); });
-            this.narration.addEventListener('ended',  () => { this.ended(); });
-            this.narration.addEventListener('waiting',  () => { this.audioWaiting(); });
-            this.narration.addEventListener('playing',  () => { this.audioUnwaiting(); });
+            this.narration.addEventListener('canplaythrough', () => { this.loaded(); });
+            this.narration.addEventListener('timeupdate',     () => { this.seek(); });
+            this.narration.addEventListener('ended',          () => { this.ended(); });
+            this.narration.addEventListener('waiting',        () => { this.audioWaiting(); });
+            this.narration.addEventListener('playing',        () => { this.audioUnwaiting(); });
         }
 
         Player.prototype =
@@ -201,8 +207,8 @@
           }
         })();
 
-        function getFileName(affix) {
-          const cdn = "https://cdn.getforge.com/trees-are-fags.eu/" + getCdnCode();
+        function getFileName(affix, encodeCdn) {
+          const cdn = encodeCdn ? "https://cdn.getforge.com/trees-are-fags.eu/" + getCdnCode() : '.';
           const dir = "/audio/"; // directory/URI
           const prefix = "cue-"; // prefix if cue (ie. if passed a number)
           const postfix = ".mp3"; // format
