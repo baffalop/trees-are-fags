@@ -71,9 +71,9 @@
             this.skipTime = skipTime;
             this.startTime = startTime;
 
-            const src = getFileName(getRandomCueArrangement(), true)
+            const src = getRandomCueArrangement()
             console.log('Using arrangement: ' + src)
-            this.narration = new Audio(src);
+            this.narration = new Audio(getFileName(src, true));
 
             this.narration.preload = "auto";
             this.narration.addEventListener('canplaythrough', () => { this.loaded(); });
