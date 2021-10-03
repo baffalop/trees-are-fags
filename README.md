@@ -2,7 +2,7 @@
 
 A guided encounter with a tree, in the form of a dynamically recombining audio piece.
 
-Conceived and written by [Benny Nemerofsky Ramsay](http://www.nemerofsky.ca/).
+Conceived and written by [Benny Nemer](https://www.nemer.be/).
 
 Sound design and programming by Nikita Gaidakov.
 
